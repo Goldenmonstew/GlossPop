@@ -1,0 +1,90 @@
+name: GlossPop
+
+# XcodeGen project for GlossPop — standalone macOS swipe-translate app.
+# Edit THIS file (not the generated .xcodeproj) and run `make gen` / `xcodegen`.
+# M1 scaffold: minimal AppKit menu-bar skeleton, no external SPM deps yet
+# (KeyboardShortcuts → M2, Sparkle → M6).
+
+options:
+  bundleIdPrefix: com.wanruncong
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+  developmentLanguage: en   # source strings are English; Localizable.xcstrings carries the other languages
+
+packages:
+  Sparkle:                                   # auto-update for non-App-Store distribution (M6)
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.6.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"          # Swift 6 strict concurrency from the start (cheapest while code is tiny)
+    DEVELOPMENT_TEAM: F4848G2W8P
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "15"
+    ARCHS: arm64                  # Apple Silicon only
+    EXCLUDED_ARCHS: x86_64
+    SWIFT_EMIT_LOC_STRINGS: "YES"
+
+schemes:
+  GlossPop:
+    build:
+      targets:
+        GlossPop: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - GlossPopTests
+    archive:
+      config: Release
+
+targets:
+  GlossPop:
+    type: application
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Sources
+    info:
+      path: Sources/App/Info.plist
+      properties:
+        CFBundleDisplayName: GlossPop
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSUIElement: true                       # menu-bar agent, no Dock icon
+        LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
+        NSAccessibilityUsageDescription: "GlossPop reads the text you select (via Accessibility) so it can translate it. Your selection is sent only to the translation engine you choose, and is not kept unless you turn on Translation History (stored locally)."
+        NSHumanReadableCopyright: "© 2026 wanruncong. Licensed under AGPL-3.0-or-later."
+        # Sparkle auto-update (M6). SUFeedURL: appcast hosted on GitHub Releases — adjust the repo path.
+        SUFeedURL: "https://raw.githubusercontent.com/Goldenmonstew/GlossPop/main/appcast.xml"
+        SUPublicEDKey: "P2hWy0UV1LX9qx2EmdjYI7M9yiuTAlTMbxi7K4uNVJI="
+        SUEnableAutomaticChecks: true
+        SUScheduledCheckInterval: 86400
+    dependencies:
+      - package: Sparkle
+    entitlements:
+      path: Sources/App/GlossPop.entitlements
+      properties: {}                            # ZERO entitlements (no sandbox); add only when a feature needs one
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wanruncong.glosspop
+        ENABLE_HARDENED_RUNTIME: "YES"
+        PRODUCT_NAME: GlossPop
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+
+  GlossPopTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Tests
+    dependencies:
+      - target: GlossPop
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: "YES"
+        PRODUCT_BUNDLE_IDENTIFIER: com.wanruncong.glosspop.tests

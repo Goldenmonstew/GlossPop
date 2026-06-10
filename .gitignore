@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# Xcode / build
+build/
+DerivedData/
+.build/
+*.xcuserstate
+xcuserdata/
+
+# XcodeGen output (regenerate from project.yml — project.yml is the source of truth)
+*.xcodeproj
+*.xcworkspace
+Sources/App/Info.plist
+Sources/App/GlossPop.entitlements
+
+# SwiftPM
+.swiftpm/
+
+# Secrets / signing — never commit
+secrets/
+*.p8
+*.cer
+*.p12
+appcast-private-key*
+
+# Release artifacts (DMGs go to GitHub Releases; appcast.xml lives at repo root)
+dist/
