@@ -1,5 +1,7 @@
 # GlossPop
 
+**English** | [简体中文](README.zh-Hans.md)
+
 **Swipe-to-translate for macOS.** Select text anywhere, press one hotkey, and get an **LLM translation that's also a dictionary and a grammar tutor** — streamed into a near-cursor panel that **never touches your clipboard** and **never steals focus**.
 
 ![macOS 15+](https://img.shields.io/badge/macOS-15%2B-black?logo=apple) ![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-blue) ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-green) [![Latest release](https://img.shields.io/github/v/release/Goldenmonstew/GlossPop)](https://github.com/Goldenmonstew/GlossPop/releases/latest) ![Downloads](https://img.shields.io/github/downloads/Goldenmonstew/GlossPop/total)
@@ -49,11 +51,11 @@ Settings ▸ *Translation model*:
 3. **Model** — type it, or fetch the list from `/v1/models`; **Test connection** verifies it end-to-end.
 4. Changes apply immediately — the first test on a new cloud host doubles as your one-time consent.
 
-When the endpoint is a cloud/relay host, the panel''s footer is badged **“cloud”** so you always know your text left the machine; loopback (`localhost`) is badged **“on-device”**. The UI is localised into English, 简体中文, 繁體中文, 日本語, 한국어, Français, Deutsch, Español and Русский, following your system language.
+When the endpoint is a cloud/relay host, the panel's footer is badged **“cloud”** so you always know your text left the machine; loopback (`localhost`) is badged **“on-device”**. The UI is localised into English, 简体中文, 繁體中文, 日本語, 한국어, Français, Deutsch, Español and Русский, following your system language.
 
 ## Privacy
 
-- **Default path is zero-clipboard and on-device** (Apple NMT). Nothing is sent anywhere unless you enable a cloud/relay engine.
+- **Zero clipboard by default**, and the word/phrase path can run fully offline (macOS system dictionary). Nothing is ever sent to a cloud host until you configure one and confirm it once via **Test connection**.
 - The optional Tier-2 “synthetic copy” fallback (for apps that don't expose selection, e.g. Safari/Electron) is **off by default**; when on, it restores your clipboard immediately.
 - Your selection isn't stored or logged unless you turn on **Translation History** (off by default; kept locally in plain text, clearable anytime).
 
