@@ -52,48 +52,9 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     }
 }
 
-private enum Provider: String, CaseIterable, Identifiable {
-    case openai, deepseek, ollama, custom
-    var id: String { rawValue }
-    var label: String {
-        switch self {
-        case .openai: return "OpenAI"
-        case .deepseek: return "DeepSeek"
-        case .ollama: return String(localized: "Ollama (local)")
-        case .custom: return String(localized: "Custom / relay")
-        }
-    }
-    var presetURL: String? {   // host base only; apiPath carries the /v1/chat/completions route
-        switch self {
-        case .openai: return "https://api.openai.com"
-        case .deepseek: return "https://api.deepseek.com"
-        case .ollama: return "http://localhost:11434"
-        case .custom: return nil
-        }
-    }
-    var defaultModel: String? {
-        switch self {
-        case .openai: return "gpt-4o-mini"
-        case .deepseek: return "deepseek-chat"
-        case .ollama: return "qwen2.5"
-        case .custom: return nil
-        }
-    }
-    var isLocal: Bool { self == .ollama }
-    /// Only classify as a preset when BOTH host and path match it — otherwise a custom localhost port/path or
-    /// an openai.com-hosted relay would be mislabeled and have its editable fields hidden.
-    static func from(base: String, path: String) -> Provider {
-        let host = BYOKConfig.host(base).lowercased()
-        let defaultPath = path.isEmpty || path == "/v1/chat/completions"
-        if defaultPath, host.contains("openai.com") { return .openai }
-        if defaultPath, host.contains("deepseek") { return .deepseek }
-        if defaultPath, BYOKConfig.isLocal(base) { return .ollama }
-        return .custom
-    }
-}
 
 private struct SettingsView: View {
-    @State private var provider = Provider.from(base: BYOKConfig.baseURL, path: BYOKConfig.apiPath)
+    @State private var provider = ProviderCatalog.match(base: BYOKConfig.baseURL, path: BYOKConfig.apiPath)?.id ?? "custom"
     @State private var baseURL = BYOKConfig.baseURL
     @State private var model = BYOKConfig.model
     @State private var apiKey = BYOKConfig.apiKey
@@ -124,6 +85,8 @@ private struct SettingsView: View {
     private enum Field: Hashable { case base, path, key, model, sysPrompt, userPrompt }
     @FocusState private var focusedField: Field?
 
+    private var selectedPreset: ProviderPreset? { ProviderCatalog.preset(id: provider) }
+    private var isLocalProvider: Bool { selectedPreset?.isLocal ?? BYOKConfig.isLocal(baseURL) }
     private var trimmedBase: String { baseURL.trimmingCharacters(in: .whitespacesAndNewlines) }
     private var trimmedKey: String { apiKey.trimmingCharacters(in: .whitespacesAndNewlines) }
     private var trimmedModel: String { model.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -155,9 +118,10 @@ private struct SettingsView: View {
         .onDisappear { stopRecording(); inflight?.cancel(); commitText() } // flush pending edits on close
         .onChange(of: provider) {
             status = nil; models = []
-            if let preset = provider.presetURL {   // a known provider: reset endpoint + model to its defaults
-                baseURL = preset; apiPath = "/v1/chat/completions"
-                if let dm = provider.defaultModel { model = dm }
+            if let preset = selectedPreset {   // a known provider: reset endpoint + model to its defaults
+                baseURL = preset.baseURL
+                apiPath = preset.apiPath
+                if !preset.defaultModel.isEmpty { model = preset.defaultModel }
             }
             commitText()
         }
@@ -238,13 +202,24 @@ private struct SettingsView: View {
     @ViewBuilder private var modelSection: some View {
         Section("Translation model") {
             Picker("Provider", selection: $provider) {
-                ForEach(Provider.allCases) { Text($0.label).tag($0) }
+                Section("International") {
+                    ForEach(ProviderCatalog.presets.filter { $0.region == .global }) { Text($0.name).tag($0.id) }
+                }
+                Section("China mainland") {
+                    ForEach(ProviderCatalog.presets.filter { $0.region == .cn }) { Text($0.name).tag($0.id) }
+                }
+                Section("Local") {
+                    ForEach(ProviderCatalog.presets.filter { $0.region == .local }) { Text($0.name).tag($0.id) }
+                }
+                Section {
+                    Text("Custom / relay").tag("custom")
+                }
             }
-            if provider == .custom {
+            if provider == "custom" {
                 TextField("Endpoint", text: $baseURL, prompt: Text("https://your-relay-host")).focused($focusedField, equals: .base).onSubmit { commitText() }
                 TextField("API path", text: $apiPath, prompt: Text("/v1/chat/completions")).focused($focusedField, equals: .path).onSubmit { commitText() }
             }
-            if !provider.isLocal {
+            if !isLocalProvider {
                 SecureField("API key", text: $apiKey, prompt: Text("Stored only in your local Keychain")).focused($focusedField, equals: .key).onSubmit { commitText() }
             }
             LabeledContent("Model") {
@@ -282,7 +257,7 @@ private struct SettingsView: View {
                 Text("First time with this cloud service: clicking “Test connection” confirms sending selected text to \(host) (one-time) and enables translation.")
                     .font(.caption).foregroundStyle(.orange)
             }
-            Text(provider.isLocal ? String(localized: "Local model — your text never leaves this Mac.")
+            Text(isLocalProvider ? String(localized: "Local model — your text never leaves this Mac.")
                                   : String(localized: "Changes apply immediately. Translation sends your selected text to this service; the popup footer shows where it went. Reasoning effort only affects models that support it (e.g. gpt-5.x) — lower is faster."))
                 .font(.caption).foregroundStyle(.secondary)
         }
