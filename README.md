@@ -4,7 +4,7 @@
 
 **Swipe-to-translate for macOS.** Select text anywhere, press one hotkey, and get an **LLM translation that's also a dictionary and a grammar tutor** — streamed into a near-cursor panel that **never touches your clipboard** and **never steals focus**.
 
-![macOS 15+](https://img.shields.io/badge/macOS-15%2B-black?logo=apple) ![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-blue) ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-green) [![Latest release](https://img.shields.io/github/v/release/Goldenmonstew/GlossPop)](https://github.com/Goldenmonstew/GlossPop/releases/latest) ![Downloads](https://img.shields.io/github/downloads/Goldenmonstew/GlossPop/total)
+![macOS 15+](https://img.shields.io/badge/macOS-15%2B-black?logo=apple) ![Universal](https://img.shields.io/badge/Universal-Apple%20Silicon%20%2B%20Intel-blue) ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-green) [![Latest release](https://img.shields.io/github/v/release/Goldenmonstew/GlossPop)](https://github.com/Goldenmonstew/GlossPop/releases/latest) ![Downloads](https://img.shields.io/github/downloads/Goldenmonstew/GlossPop/total)
 
 <p align="center">
   <a href="https://github.com/Goldenmonstew/GlossPop/releases/latest"><b>⬇️&nbsp;&nbsp;Download GlossPop</b></a> — free, notarised by Apple, auto-updates
@@ -73,7 +73,7 @@ Maintainer release pipeline (Developer ID sign → notarize → DMG → Sparkle 
 
 ## Contributing
 
-Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). macOS 15+, Apple Silicon, Swift 6 (strict concurrency).
+Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). macOS 15+, Universal (Apple Silicon + Intel), Swift 6 (strict concurrency).
 
 ## License
 

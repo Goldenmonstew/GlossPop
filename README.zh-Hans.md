@@ -4,7 +4,7 @@
 
 **macOS 划词翻译。** 在任何 App 里选中文字,按一个快捷键,得到一份**既是翻译、又是词典、还是语法老师**的 LLM 结果——流式呈现在光标旁的浮窗里,**绝不碰你的剪贴板**,**绝不抢焦点**。
 
-![macOS 15+](https://img.shields.io/badge/macOS-15%2B-black?logo=apple) ![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-blue) ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-green) [![Latest release](https://img.shields.io/github/v/release/Goldenmonstew/GlossPop)](https://github.com/Goldenmonstew/GlossPop/releases/latest) ![Downloads](https://img.shields.io/github/downloads/Goldenmonstew/GlossPop/total)
+![macOS 15+](https://img.shields.io/badge/macOS-15%2B-black?logo=apple) ![Universal](https://img.shields.io/badge/Universal-Apple%20Silicon%20%2B%20Intel-blue) ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-green) [![Latest release](https://img.shields.io/github/v/release/Goldenmonstew/GlossPop)](https://github.com/Goldenmonstew/GlossPop/releases/latest) ![Downloads](https://img.shields.io/github/downloads/Goldenmonstew/GlossPop/total)
 
 <p align="center">
   <a href="https://github.com/Goldenmonstew/GlossPop/releases/latest"><b>⬇️&nbsp;&nbsp;下载 GlossPop</b></a> — 免费,苹果公证,自动更新
@@ -73,7 +73,7 @@ make test    # 单元测试
 
 ## 参与贡献
 
-欢迎 Issue 和 PR——见 [CONTRIBUTING.md](CONTRIBUTING.md)。macOS 15+,Apple Silicon,Swift 6(严格并发)。
+欢迎 Issue 和 PR——见 [CONTRIBUTING.md](CONTRIBUTING.md)。macOS 15+,通用二进制(Apple Silicon + Intel),Swift 6(严格并发)。
 
 ## 许可证
 
