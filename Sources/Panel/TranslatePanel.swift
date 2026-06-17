@@ -372,7 +372,7 @@ private struct DictionaryCard: View {
             if !idioms.isEmpty {
                 Divider()
                 ForEach(Array(idioms.enumerated()), id: \.offset) { _, idiom in
-                    Text([idiom.phrase, idiom.meaning].filter { !$0.isEmpty }.joined(separator: "："))
+                    Text(keyValue(idiom.phrase, idiom.meaning))
                         .font(.caption).fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -460,6 +460,33 @@ private struct SystemDictionaryCard: View {
     }
 }
 
+// Pick a "key: value" colon that fits the text's script: a full-width "：" for CJK (it carries its own
+// spacing) but an ASCII ": " for Latin — a full-width colon between Latin words renders as an oversized,
+// lopsided gap. Shared by the sentence grammar points and the word-card idioms.
+private func scriptColon(for text: String) -> String {
+    let isCJK = text.unicodeScalars.contains { scalar in
+        switch scalar.value {
+        case 0x3040...0x30FF,   // Hiragana + Katakana
+             0x3400...0x4DBF,   // CJK Ext-A
+             0x4E00...0x9FFF,   // CJK Unified Ideographs
+             0xAC00...0xD7A3,   // Hangul syllables
+             0xF900...0xFAFF,   // CJK Compatibility Ideographs
+             0xFF00...0xFFEF:   // Full-/half-width forms
+            return true
+        default:
+            return false
+        }
+    }
+    return isCJK ? "：" : ": "
+}
+
+// Join a label and its detail with a script-appropriate colon, dropping the colon if either side is empty.
+private func keyValue(_ key: String, _ detail: String) -> String {
+    let parts = [key, detail].filter { !$0.isEmpty }
+    guard parts.count == 2 else { return parts.joined() }
+    return parts[0] + scriptColon(for: parts[0] + parts[1]) + parts[1]
+}
+
 // 直译 was dropped on user request: the streamed stage-1 translation is already on screen, and the
 // literal variant arrived late (with the syntax JSON) only to occupy a near-duplicate line.
 private struct SentenceCard: View {
@@ -474,17 +501,51 @@ private struct SentenceCard: View {
                     Text("S: \(s.subject)   V: \(s.predicate)\(s.objects.isEmpty ? "" : String(localized: "   O: ") + s.objects.joined(separator: ", "))")
                         .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
-                ForEach(Array(s.grammarPoints.filter { !$0.point.isEmpty || !$0.explanation.isEmpty }.prefix(4).enumerated()), id: \.offset) { _, gp in
-                    HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        Text("·").font(.caption).foregroundStyle(.secondary)
-                        Text([gp.point, gp.explanation].filter { !$0.isEmpty }.joined(separator: "："))
-                            .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                let points = s.grammarPoints.filter { !$0.point.isEmpty || !$0.explanation.isEmpty }.prefix(4)
+                if !points.isEmpty {
+                    VStack(alignment: .leading, spacing: 3) {   // tight rows so the points read as one list
+                        ForEach(Array(points.enumerated()), id: \.offset) { _, gp in
+                            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                Text("·").font(.caption).foregroundStyle(.secondary)
+                                Text(keyValue(gp.point, gp.explanation))
+                                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
                     }
                 }
             }
-            if analysis.notes.contains(where: { !$0.isEmpty }) {
-                Text(analysis.notes.filter { !$0.isEmpty }.joined(separator: " · ")).font(.caption2).foregroundStyle(.tertiary)
+            let notes = analysis.notes.filter { !$0.isEmpty }
+            if !notes.isEmpty {
+                // Each note is a complete sentence — stack them as a quiet footnote instead of fusing them
+                // with " · ", which collided with the grammar bullets and read as a run-on. The colour is
+                // .secondary dimmed with .opacity, NOT .tertiary: over the behind-window vibrancy material
+                // SwiftUI's tertiary hierarchy uses a darker blend that renders heavier than .secondary, so
+                // the meant-to-be-faintest tier came out the loudest. Explicit opacity blends toward the
+                // material predictably, keeping the notes the quietest tier.
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(Array(notes.enumerated()), id: \.offset) { _, note in
+                        Text(note).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .opacity(0.7)
+                .padding(.top, 2)
             }
         }
     }
+}
+
+// Dev aid (--render-card): render the sentence card to a PNG offscreen via ImageRenderer, so its layout
+// and typography can be verified without screen-recording permission (an asleep/headless display denies it).
+@MainActor func renderSentenceCardPNG(_ analysis: SentenceAnalysis, to path: String) -> Bool {
+    let view = SentenceCard(analysis: analysis)
+        .frame(width: 320, alignment: .leading)
+        .padding(16)
+        .background(Color(nsColor: .windowBackgroundColor))
+    let renderer = ImageRenderer(content: view)
+    renderer.scale = 2
+    guard let img = renderer.nsImage,
+          let tiff = img.tiffRepresentation,
+          let rep = NSBitmapImageRep(data: tiff),
+          let png = rep.representation(using: .png, properties: [:]) else { return false }
+    return (try? png.write(to: URL(fileURLWithPath: path))) != nil
 }

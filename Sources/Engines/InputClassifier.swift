@@ -38,6 +38,21 @@ enum InputClassifier {
         return ClassifiedInput(kind: kind, source: source, sourceCode: source.minimalIdentifier, confident: confident)
     }
 
+    // True when the text spans more than one sentence. S/V/O is a single-sentence notion, so for a
+    // multi-sentence selection the subject/predicate/objects are meaningless and the card hides them.
+    static func isMultiSentence(_ text: String) -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        let tokenizer = NLTokenizer(unit: .sentence)
+        tokenizer.string = trimmed
+        var count = 0
+        tokenizer.enumerateTokens(in: trimmed.startIndex..<trimmed.endIndex) { _, _ in
+            count += 1
+            return count < 2   // stop as soon as a second sentence is seen
+        }
+        return count >= 2
+    }
+
     private static func containsVerb(_ text: String) -> Bool {
         let tagger = NLTagger(tagSchemes: [.lexicalClass])
         tagger.string = text

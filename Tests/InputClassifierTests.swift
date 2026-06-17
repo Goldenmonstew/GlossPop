@@ -25,4 +25,17 @@ final class InputClassifierTests: XCTestCase {
     func testCJKFullWidthQuestionIsSentence() {
         XCTAssertEqual(InputClassifier.classify("你今天过得怎么样？").kind, .sentence)
     }
+
+    // S/V/O is hidden for paragraphs: one sentence is NOT multi, two or more IS.
+    func testSingleSentenceIsNotMultiSentence() {
+        XCTAssertFalse(InputClassifier.isMultiSentence("The quick brown fox jumps over the lazy dog."))
+    }
+
+    func testTwoSentencesAreMultiSentence() {
+        XCTAssertTrue(InputClassifier.isMultiSentence("We introduce a benchmark. It evaluates models on hard tasks."))
+    }
+
+    func testCJKMultipleSentencesAreMultiSentence() {
+        XCTAssertTrue(InputClassifier.isMultiSentence("我们提出了一个基准。它用于评估模型。"))
+    }
 }

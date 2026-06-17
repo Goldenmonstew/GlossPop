@@ -50,6 +50,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var hotKeyOK = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Dev aid: render the sentence card to a PNG and exit — verifies layout without screen capture.
+        if let i = CommandLine.arguments.firstIndex(of: "--render-card"), i + 1 < CommandLine.arguments.count {
+            _ = renderSentenceCardPNG(Self.demoSentenceAnalysis(), to: CommandLine.arguments[i + 1])
+            NSApp.terminate(nil)
+            return
+        }
         // Under XCTest, GlossPop is only the test HOST — skip the agent lifecycle (the single-instance
         // guard would otherwise terminate the host when another GlossPop is running, breaking the test boot).
         if NSClassFromString("XCTestCase") != nil { return }
@@ -61,6 +67,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         BYOKConfig.migrateURLSplitIfNeeded()   // split a legacy full base URL into host + path (one-time)
         TargetLanguage.migrate()               // legacy single target.override → first/second language (one-time)
         DictionaryConfig.migrate()             // legacy dictionary on/off → DictionaryMode (one-time)
+        LoginItem.reconcileAtLaunch()          // re-register a login item the OS dropped (upgrade reset) + migrate intent
         NSApp.mainMenu = Self.makeMainMenu() // LSUIElement app has no menu → wire Edit (⌘C/V/X/A) + Window (⌘W)
         // No bare TCC dialog at launch — the prompt fires on FIRST USE from handleHotKey,
         // where our card explains WHY alongside the system dialog.
@@ -71,7 +78,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         setUpMenuBar()
         updaterController.startUpdater()   // Sparkle: begin background update checks (not under XCTest)
         if CommandLine.arguments.contains("--open-settings") { settingsController.show() } // dev/verify aid
+        if CommandLine.arguments.contains("--dark") { NSApp.appearance = NSAppearance(named: .darkAqua) } // dev aid: force this app dark for consistent screenshots (system appearance untouched)
         if CommandLine.arguments.contains("--demo-card") { presentDemoCard() }   // dev/verify aid: silent screenshots
+        if CommandLine.arguments.contains("--demo-sentence") { presentDemoSentence() } // dev/verify aid: the sentence card
+    }
+
+    /// Dev aid (--demo-sentence): a populated sentence card (translation + syntax breakdown + notes)
+    /// so the analysis-block typography can be verified from a screenshot without driving capture.
+    private func presentDemoSentence() {
+        resetWordCard()
+        panel.model.analysis = Self.demoSentenceAnalysis()
+        panel.model.structured = true
+        panel.present()
+        panel.disarmDismissForDemo()
+    }
+
+    /// Shared fixture for the sentence-card dev aids (--demo-sentence on-screen, --render-card headless).
+    static func demoSentenceAnalysis() -> SentenceAnalysis {
+        // Source: "The team decided to call it a day after fixing the last bug."
+        var a = SentenceAnalysis()
+        a.refinedTranslation = "团队修完最后一个 bug 后，决定今天就到此为止。"
+        a.syntax.subject = "The team"
+        a.syntax.predicate = "decided"
+        a.syntax.objects = ["to call it a day"]
+        a.syntax.grammarPoints = [
+            .init(point: "decided to", explanation: "动词后接不定式 to do，表示做出的决定。"),
+            .init(point: "after fixing", explanation: "after 接动名词，说明动作发生的先后顺序。"),
+        ]
+        a.notes = [
+            "“call it a day” 是习语，意为“今天到此为止、收工”，不能按字面理解。",
+        ]
+        return a
     }
 
     /// Dev aid (--demo-card): a populated word card without driving input, so chrome/typography
@@ -438,6 +475,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             guard !Task.isCancelled, id == requestSeq else { return }
             if case .sentence(var analysis) = result {
                 analysis.refinedTranslation = translation   // keep the stage-1 translation stable (no flicker)
+                if InputClassifier.isMultiSentence(source) {
+                    // A paragraph has no single S/V/O — drop it, keep the grammar points + notes.
+                    analysis.syntax.subject = ""; analysis.syntax.predicate = ""; analysis.syntax.objects = []
+                }
                 panel.model.analysis = analysis
                 panel.model.structured = true
             }
@@ -609,6 +650,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         historyItem.submenu = buildHistoryMenu()
         menu.addItem(historyItem)
 
+        // A major-OS upgrade can de-approve the login item with no in-app signal; surface the live
+        // state as a passive menu action (no popup) that deep-links to System Settings ▸ Login Items.
+        // Gated on the launch-time flag so a deliberate mid-run revoke is never nagged about.
+        if LoginItem.nudgeForApproval, LoginItem.requiresApproval {
+            let approve = NSMenuItem(title: String(localized: "Approve Launch at Login…"),
+                                     action: #selector(approveLoginItem), keyEquivalent: "")
+            approve.target = self
+            menu.addItem(approve)
+        }
+
         let settings = NSMenuItem(title: String(localized: "Settings…"), action: #selector(openSettings), keyEquivalent: ",")
         settings.target = self
         menu.addItem(settings)
@@ -655,6 +706,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func captureFromMenu() { handleHotKey() }
+
+    @objc private func approveLoginItem() { LoginItem.openSystemSettings() }
 
     @objc private func openHistory(_ sender: NSMenuItem) {
         guard let entry = sender.representedObject as? HistoryEntry else { return }

@@ -20,9 +20,13 @@ The UI follows your system language — English, 简体中文, 繁體中文, 日
 
 Most swipe-translators are fragile (resident event taps that lag the system, clipboard pollution) and just dump a flat translation. GlossPop is **input-aware** and reliable:
 
-- 🧠 **It adapts to what you select.** A word or phrase → a full **dictionary** entry (pronunciation, part-of-speech senses, examples, synonyms, idioms). A sentence → **translation + syntax analysis** (clauses, subject/predicate/object, grammar points, word-by-word gloss). Plain phrases → a clean streamed translation.
+- 🧠 **It adapts to what you select.** A word or phrase → a full **dictionary** entry (pronunciation, part-of-speech senses, examples, synonyms, idioms). A sentence → **translation + analysis**: subject/predicate/object, grammar points, and notes on idioms or tricky terms — all explained in *your* language, not the source's. A whole paragraph keeps the translation and notes but skips the per-sentence breakdown. Plain phrases → a clean streamed translation.
 - 🔑 **Your model.** Translation runs on the LLM you choose — **bring your own key** to any OpenAI-compatible endpoint (cloud, a relay, or a local **Ollama** / **LM Studio**), or on-device **Apple Foundation Models** where available.
 - 🔒 **Zero side-effects.** Accessibility-first capture — no resident `CGEventTap`, the clipboard is never touched by default, focus never leaves your app. A provenance badge tells you exactly where your text went.
+
+<p align="center">
+  <img src="docs/sentence-card.png" width="440" alt="GlossPop sentence card: a Chinese translation, the subject/predicate/object kept in the original English, grammar points, and a note explaining the idiom 'call it a day' — the whole analysis written in the reader's own language">
+</p>
 
 ## Install
 
