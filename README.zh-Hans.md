@@ -2,7 +2,7 @@
 
 [English](README.md) | **简体中文**
 
-**macOS 划词翻译。** 在任何 App 里选中文字,按一个快捷键,得到一份**既是翻译、又是词典、还是语法老师**的 LLM 结果——流式呈现在光标旁的浮窗里,**绝不碰你的剪贴板**,**绝不抢焦点**。
+**macOS 划词翻译。** 在任何 App 里选中文字,按一个快捷键,得到一份**既是翻译、又是词典、还是语法老师**的 LLM 结果——流式呈现在光标旁的浮窗里,**默认不碰你的剪贴板**,**绝不抢焦点**。
 
 ![macOS 15+](https://img.shields.io/badge/macOS-15%2B-black?logo=apple) ![Universal](https://img.shields.io/badge/Universal-Apple%20Silicon%20%2B%20Intel-blue) ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-green) [![Latest release](https://img.shields.io/github/v/release/Goldenmonstew/GlossPop)](https://github.com/Goldenmonstew/GlossPop/releases/latest) ![Downloads](https://img.shields.io/github/downloads/Goldenmonstew/GlossPop/total)
 
@@ -32,7 +32,7 @@
 
 1. 从 [**Releases**](https://github.com/Goldenmonstew/GlossPop/releases/latest) 页面下载最新的 **`GlossPop-x.y.z.dmg`**(苹果公证)。
 2. 打开 DMG,把 **GlossPop** 拖进 **Applications**。
-3. 启动——菜单栏出现 💬 图标。首次使用按提示授予**辅助功能**权限(系统设置 ▸ 隐私与安全性 ▸ 辅助功能 ▸ 勾选 GlossPop),这是它不碰剪贴板就能读取选区的方式。
+3. 启动——菜单栏出现 💬 图标。首次划词翻译时按提示授予**辅助功能**权限(系统设置 ▸ 隐私与安全性 ▸ 辅助功能 ▸ 勾选 GlossPop),这是它不碰剪贴板就能读取选区的方式。
 
 更新经 [Sparkle](https://sparkle-project.org) 自动推送(也可菜单 ▸ 检查更新…)。
 
@@ -41,6 +41,12 @@
 - 在任意 App 选中文字 → 按 **⌃⌘T** → 浮窗在光标旁弹出。
 - 按 **Esc** 或点击别处关闭;源 App 的选区保持原样。
 - 从菜单栏图标打开**设置…**,选择语言、词典模式和翻译引擎。
+
+## 生词本（v1.1）
+
+- 使用结果卡片上的操作按钮**复制结果**，或把单词、短语收藏到生词本。
+- 从菜单栏打开**生词本**，可搜索已收藏内容、按语言组合筛选，也可删除单条记录或清空全部内容。
+- 可将生词本中的全部内容导出为 CSV 或兼容 Anki 的 UTF-8 文本。CSV 用于外部使用，不是无损备份，GlossPop 目前也不支持将其重新导入。
 
 ## 自带模型(BYOK)
 
@@ -61,7 +67,8 @@
 
 - **默认零剪贴板**,词/短语路径可完全离线(macOS 系统词典)。在你配置并通过**测试连接**确认之前,任何内容都不会发往云端。
 - 可选的「合成复制」兜底(针对 Safari/Electron 等不暴露选区的 App)**默认关闭**;开启时也会立即恢复你原来的剪贴板。
-- 除非你打开**翻译历史**(默认关闭;明文存本机,随时可清空),你的选中内容不会被存储或记录。
+- 默认情况下，选中内容不会被存储或记录。若开启**翻译历史**，选中内容及已有结果会以明文保存在本机；明确收藏单词或短语时，该词语及其词典结果也会写入本机生词本。
+- 生词本中的有效记录以明文形式仅存于本机，可逐条删除、全部清空或随时导出。若 GlossPop 在恢复时保留了损坏的词库文件，会显示备份位置，供你在访达中检查或删除。
 
 ## 从源码构建
 

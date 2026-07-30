@@ -22,8 +22,8 @@ settings:
   base:
     SWIFT_VERSION: "6.0"          # Swift 6 strict concurrency from the start (cheapest while code is tiny)
     DEVELOPMENT_TEAM: F4848G2W8P
-    MARKETING_VERSION: "1.0.0"
-    CURRENT_PROJECT_VERSION: "16"
+    MARKETING_VERSION: "1.1.0"
+    CURRENT_PROJECT_VERSION: "17"
     ARCHS: "$(ARCHS_STANDARD)"    # universal: Apple Silicon + Intel (FM falls back gracefully on x86_64)
     ONLY_ACTIVE_ARCH[config=Debug]: "YES"   # debug builds stay native-only for speed
     SWIFT_EMIT_LOC_STRINGS: "YES"
@@ -57,7 +57,7 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSUIElement: true                       # menu-bar agent, no Dock icon
         LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
-        NSAccessibilityUsageDescription: "GlossPop reads the text you select (via Accessibility) so it can translate it. Your selection is sent only to the translation engine you choose, and is not kept unless you turn on Translation History (stored locally)."
+        NSAccessibilityUsageDescription: "GlossPop reads the text you select (via Accessibility) so it can translate it. Your selection is sent only to the translation engine you choose. It is kept locally only if you enable Translation History or explicitly save a word or phrase to Vocabulary."
         NSHumanReadableCopyright: "© 2026 wanruncong. Licensed under AGPL-3.0-or-later."
         # Sparkle auto-update (M6). SUFeedURL: appcast hosted on GitHub Releases — adjust the repo path.
         SUFeedURL: "https://raw.githubusercontent.com/Goldenmonstew/GlossPop/main/appcast.xml"

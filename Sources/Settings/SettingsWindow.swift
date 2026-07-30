@@ -10,8 +10,13 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     func show() {
         // Become a regular app while Settings is open so the window reliably comes to the front
-        // (an .accessory app can't bring a window forward dependably). Reverted on close.
-        NSApp.setActivationPolicy(.regular)
+        // (an .accessory app can't bring a window forward dependably). The app returns to accessory
+        // only after every user window has closed.
+        if let delegate = NSApp.delegate as? AppDelegate {
+            delegate.userWindowDidOpen(self)
+        } else {
+            NSApp.setActivationPolicy(.regular)
+        }
         if window == nil {
             let h = NSHostingController(rootView: SettingsView())
             let w = NSWindow(contentViewController: h)
@@ -48,7 +53,11 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory) // back to menu-bar agent
+        if let delegate = NSApp.delegate as? AppDelegate {
+            delegate.userWindowWillClose(self)
+        } else {
+            NSApp.setActivationPolicy(.accessory)
+        }
     }
 }
 

@@ -2,7 +2,7 @@
 
 **English** | [简体中文](README.zh-Hans.md)
 
-**Swipe-to-translate for macOS.** Select text anywhere, press one hotkey, and get an **LLM translation that's also a dictionary and a grammar tutor** — streamed into a near-cursor panel that **never touches your clipboard** and **never steals focus**.
+**Swipe-to-translate for macOS.** Select text anywhere, press one hotkey, and get an **LLM translation that's also a dictionary and a grammar tutor** — streamed into a near-cursor panel that **leaves your clipboard untouched by default** and **never steals focus**.
 
 ![macOS 15+](https://img.shields.io/badge/macOS-15%2B-black?logo=apple) ![Universal](https://img.shields.io/badge/Universal-Apple%20Silicon%20%2B%20Intel-blue) ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-green) [![Latest release](https://img.shields.io/github/v/release/Goldenmonstew/GlossPop)](https://github.com/Goldenmonstew/GlossPop/releases/latest) ![Downloads](https://img.shields.io/github/downloads/Goldenmonstew/GlossPop/total)
 
@@ -32,7 +32,7 @@ Most swipe-translators are fragile (resident event taps that lag the system, cli
 
 1. Download the latest **`GlossPop-x.y.z.dmg`** from the [**Releases**](https://github.com/Goldenmonstew/GlossPop/releases/latest) page (notarized by Apple).
 2. Open the DMG and drag **GlossPop** to **Applications**.
-3. Launch it — a 💬 icon appears in the menu bar. On first run, grant **Accessibility** when prompted (System Settings ▸ Privacy & Security ▸ Accessibility ▸ enable GlossPop). This is how it reads your selection without the clipboard.
+3. Launch it — a 💬 icon appears in the menu bar. On your first translation, grant **Accessibility** when prompted (System Settings ▸ Privacy & Security ▸ Accessibility ▸ enable GlossPop). This is how it reads your selection without the clipboard.
 
 Updates are delivered automatically via [Sparkle](https://sparkle-project.org) (or menu ▸ Check for Updates…).
 
@@ -41,6 +41,12 @@ Updates are delivered automatically via [Sparkle](https://sparkle-project.org) (
 - Select text in any app → press **⌃⌘T** → the panel pops up near your cursor.
 - **Esc** or click away to dismiss. The selection in the source app stays intact.
 - Open **Settings…** from the menu-bar icon to choose the target language, output mode, and translation engine.
+
+## Personal vocabulary (v1.1)
+
+- Use the result card actions to **copy the result** or save a word or phrase to your vocabulary.
+- Open **Vocabulary** from the menu bar to search saved entries, filter them by language pair, and remove individual entries or clear the library.
+- Export the whole library as CSV or as Anki-compatible UTF-8 text. CSV is intended for external use, not as a lossless backup, and GlossPop cannot currently import it.
 
 ## Bring your own model (BYOK)
 
@@ -61,7 +67,8 @@ When the endpoint is a cloud/relay host, the panel's footer is badged **“cloud
 
 - **Zero clipboard by default**, and the word/phrase path can run fully offline (macOS system dictionary). Nothing is ever sent to a cloud host until you configure one and confirm it once via **Test connection**.
 - The optional Tier-2 “synthetic copy” fallback (for apps that don't expose selection, e.g. Safari/Electron) is **off by default**; when on, it restores your clipboard immediately.
-- Your selection isn't stored or logged unless you turn on **Translation History** (off by default; kept locally in plain text, clearable anytime).
+- By default, your selection isn't stored or logged. If you enable **Translation History**, selections and their available results are kept locally in plain text; explicitly saving a word or phrase also stores that selected term and its dictionary results in the local vocabulary.
+- Active vocabulary entries are kept locally in plain text and can be deleted individually, cleared together, or exported at any time. If GlossPop preserves a damaged vocabulary file during recovery, it shows the backup location so you can review or delete it in Finder.
 
 ## Build from source
 

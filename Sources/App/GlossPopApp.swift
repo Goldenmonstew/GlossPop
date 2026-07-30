@@ -5,6 +5,25 @@ import Sparkle
 // GlossPop — app entry. Menu-bar agent (LSUIElement / .accessory), no Dock icon.
 // M2 walking skeleton: hotkey → AX capture → non-activating near-cursor panel showing the captured text.
 
+struct AppLaunchMode: Equatable {
+    private static let demoEntryFlags: Set<String> = [
+        "--demo-card",
+        "--demo-sentence",
+        "--demo-vocabulary",
+        "--demo-vocabulary-empty",
+        "--demo-vocabulary-small",
+        "--demo-vocabulary-export",
+        "--demo-vocabulary-recovery",
+        "--demo-vocabulary-clear",
+    ]
+
+    let isDemo: Bool
+
+    init(arguments: [String]) {
+        isDemo = arguments.contains { Self.demoEntryFlags.contains($0) }
+    }
+}
+
 @main
 enum GlossPopApp {
     @MainActor static func main() {
@@ -35,10 +54,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     static var hotKeyDisplay: String { HotKeyConfig.displayString }
 
     private var statusItem: NSStatusItem?
+    private var sourceAppBeforeMenu: NSRunningApplication?   // last non-self frontmost app, for menu-triggered capture
     private var hotKey: HotKey?
     private let panel = TranslatePanelController()
     private let fmEngine = FoundationModelsEngine()
     private let settingsController = SettingsWindowController()
+    private let launchMode = AppLaunchMode(arguments: CommandLine.arguments)
+    private lazy var vocabularyStore = launchMode.isDemo
+        ? VocabularyStore.transient()
+        : VocabularyStore.shared
+    private lazy var vocabularyController = VocabularyWindowController(store: vocabularyStore)
+    private var demoVocabularyController: VocabularyWindowController?
+    private var activeUserWindows: Set<ObjectIdentifier> = []
     // Sparkle auto-update (M6). startingUpdater:false → started in didFinishLaunching (skipped under XCTest).
     private let updaterController = SPUStandardUpdaterController(startingUpdater: false,
                                                                 updaterDelegate: nil, userDriverDelegate: nil)
@@ -50,6 +77,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var hotKeyOK = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if CommandLine.arguments.contains("--dark") {
+            NSApp.appearance = NSAppearance(named: .darkAqua)
+        }
         // Dev aid: render the sentence card to a PNG and exit — verifies layout without screen capture.
         if let i = CommandLine.arguments.firstIndex(of: "--render-card"), i + 1 < CommandLine.arguments.count {
             _ = renderSentenceCardPNG(Self.demoSentenceAnalysis(), to: CommandLine.arguments[i + 1])
@@ -60,35 +90,96 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // guard would otherwise terminate the host when another GlossPop is running, breaking the test boot).
         if NSClassFromString("XCTestCase") != nil { return }
         // Single-instance: a 2nd launch adds a 2nd menu icon and silently fails to grab the hotkey.
+        // Isolated demo entry points deliberately skip normal lifecycle setup and may run beside the app.
         let bundleID = Bundle.main.bundleIdentifier ?? "com.wanruncong.glosspop"
-        if NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).count > 1 {
+        if !launchMode.isDemo,
+           NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).count > 1 {
             NSApp.terminate(nil); return
+        }
+        NSApp.mainMenu = Self.makeMainMenu() // text fields need standard Edit commands
+        configurePanelCallbacks()
+        if launchMode.isDemo {
+            presentRequestedDemos()
+            return
         }
         BYOKConfig.migrateURLSplitIfNeeded()   // split a legacy full base URL into host + path (one-time)
         TargetLanguage.migrate()               // legacy single target.override → first/second language (one-time)
         DictionaryConfig.migrate()             // legacy dictionary on/off → DictionaryMode (one-time)
         LoginItem.reconcileAtLaunch()          // re-register a login item the OS dropped (upgrade reset) + migrate intent
-        NSApp.mainMenu = Self.makeMainMenu() // LSUIElement app has no menu → wire Edit (⌘C/V/X/A) + Window (⌘W)
         // No bare TCC dialog at launch — the prompt fires on FIRST USE from handleHotKey,
         // where our card explains WHY alongside the system dialog.
+        registerHotKey()   // before the menu so it can reflect registration failure
+        setUpMenuBar()
+        // Track the app the user is actually working in, so "Translate Selection" from our menu reads ITS
+        // selection — opening the status menu steals focus, which otherwise breaks AX + the copy fallback.
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self, selector: #selector(appActivated(_:)),
+            name: NSWorkspace.didActivateApplicationNotification, object: nil)
+        updaterController.startUpdater()   // Sparkle: begin background update checks (not under XCTest)
+        if CommandLine.arguments.contains("--open-settings") { settingsController.show() } // dev/verify aid
+    }
+
+    private func configurePanelCallbacks() {
         panel.onDismiss = { [weak self] in self?.cancelCurrentTranslation() }
         panel.onOpenSettings = { [weak self] in self?.settingsController.show() }
         panel.onRunAIDictionary = { [weak self] in self?.runAIDictionaryButton() }
-        registerHotKey()   // before the menu so it can reflect registration failure
-        setUpMenuBar()
-        updaterController.startUpdater()   // Sparkle: begin background update checks (not under XCTest)
-        if CommandLine.arguments.contains("--open-settings") { settingsController.show() } // dev/verify aid
-        if CommandLine.arguments.contains("--dark") { NSApp.appearance = NSAppearance(named: .darkAqua) } // dev aid: force this app dark for consistent screenshots (system appearance untouched)
+        panel.onResultEvent = { [weak self] in self?.handleResultEvent($0) }
+    }
+
+    private func presentRequestedDemos() {
         if CommandLine.arguments.contains("--demo-card") { presentDemoCard() }   // dev/verify aid: silent screenshots
         if CommandLine.arguments.contains("--demo-sentence") { presentDemoSentence() } // dev/verify aid: the sentence card
+        if CommandLine.arguments.contains("--demo-vocabulary")
+            || CommandLine.arguments.contains("--demo-vocabulary-empty")
+            || CommandLine.arguments.contains("--demo-vocabulary-small")
+            || CommandLine.arguments.contains("--demo-vocabulary-export")
+            || CommandLine.arguments.contains("--demo-vocabulary-recovery")
+            || CommandLine.arguments.contains("--demo-vocabulary-clear") {
+            let store = CommandLine.arguments.contains("--demo-vocabulary-recovery")
+                ? VocabularyDemo.makeRecoveryStore()
+                : VocabularyDemo.makeStore(
+                    empty: CommandLine.arguments.contains("--demo-vocabulary-empty")
+                )
+            let controller = VocabularyWindowController(
+                store: store,
+                frameAutosaveName: nil,
+                presentsClearConfirmationForDemo: CommandLine.arguments.contains(
+                    "--demo-vocabulary-clear"
+                )
+            )
+            demoVocabularyController = controller
+            controller.show()
+            if CommandLine.arguments.contains("--demo-vocabulary-small") {
+                controller.setContentSizeForDemo(NSSize(width: 680, height: 440))
+            }
+            if CommandLine.arguments.contains("--demo-vocabulary-export") {
+                DispatchQueue.main.async {
+                    controller.showExportPanelForDemo()
+                }
+            }
+        }
     }
 
     /// Dev aid (--demo-sentence): a populated sentence card (translation + syntax breakdown + notes)
     /// so the analysis-block typography can be verified from a screenshot without driving capture.
     private func presentDemoSentence() {
-        resetWordCard()
+        let context = PanelRequestContext(
+            cardID: UUID(),
+            source: "The team decided to call it a day after fixing the last bug.",
+            kind: .sentence,
+            sourceLanguage: "en",
+            targetLanguage: "zh-Hans"
+        )
+        panel.model.beginCard(context: context)
         panel.model.analysis = Self.demoSentenceAnalysis()
         panel.model.structured = true
+        applyResultPayload(
+            PanelResultActionBuilder.plain(
+                context: context,
+                text: panel.model.analysis?.refinedTranslation ?? "",
+                allowsVocabulary: false
+            )
+        )
         panel.present()
         panel.disarmDismissForDemo()
     }
@@ -129,10 +220,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         let raw = "会议 huìyì noun ① （指集会） meeting▸ 出席会议 attend a meeting ▸ 结束会议 close a meeting ② （指机构） council▸ 部长会议 council of ministers"
         guard let entry = SystemDictionary.parse(raw: raw, term: "会议") else { return }
-        resetWordCard()
+        let context = PanelRequestContext(
+            cardID: UUID(),
+            source: "会议",
+            kind: .word,
+            sourceLanguage: "zh-Hans",
+            targetLanguage: "en"
+        )
+        panel.model.beginCard(context: context)
         panel.model.systemEntry = entry
+        if let payload = PanelResultActionBuilder.word(
+            context: context,
+            systemEntry: entry,
+            aiEntry: nil
+        ) {
+            panel.model.copyText = payload.copyText
+            panel.model.vocabularyDraft = payload.vocabularyDraft
+            panel.model.isVocabularySaved = false
+        }
         panel.model.subtitle = String(localized: "System dictionary · offline · entries follow your Dictionary.app setup")
+        if CommandLine.arguments.contains("--demo-action-error") {
+            panel.model.setResultActionError(
+                String(localized: "Couldn't copy the result."),
+                kind: .copy
+            )
+        }
         panel.present()
+        if CommandLine.arguments.contains("--demo-expanded") {
+            panel.model.compact = false
+            panel.refresh()
+        }
         panel.disarmDismissForDemo()   // stays up for screenshots despite clicks/scrolls elsewhere
     }
 
@@ -193,6 +310,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let tgt = TargetLanguage.displayCode(TargetLanguage.resolve(source: classified.source))
             // Source detection is unreliable for short words (NL misdetects "data"→ro etc.) — show "auto".
             let src = classified.confident ? classified.sourceCode : "auto"
+            panel.model.beginCard(
+                context: PanelRequestContext(
+                    cardID: UUID(),
+                    source: selection,
+                    kind: classified.kind,
+                    sourceLanguage: src,
+                    targetLanguage: tgt
+                )
+            )
 
             currentTranslation = Task { [weak self] in
                 guard let self else { return }
@@ -223,25 +349,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         case .empty:
             present(instant: String(localized: "No text selected."), subtitle: String(localized: "Select some text, then press \(Self.hotKeyDisplay)"))
         case .unreadable:
+            // Don't tell the user to enable the copy fallback when it's already on — that's the confusing case.
             present(instant: String(localized: "The selection can't be read here."),
-                    subtitle: String(localized: "This app doesn't expose its selection — turn on the copy fallback in Settings"))
+                    subtitle: CaptureConfig.syntheticCopyEnabled
+                        ? String(localized: "Select some text, then press \(Self.hotKeyDisplay)")
+                        : String(localized: "This app doesn't expose its selection — turn on the copy fallback in Settings"))
         }
     }
 
     /// Show a single-line card (messages / prompts).
     private func present(instant: String, subtitle: String, action: CardAction = .none) {
+        panel.model.beginCard(context: nil)
         panel.model.instant = instant
-        panel.model.refined = ""
         panel.model.subtitle = subtitle
         panel.model.action = action
-        panel.model.refining = false
-        panel.model.essentialSubtitle = false
-        panel.model.structured = false
-        panel.model.analysis = nil
-        panel.model.systemEntry = nil
-        panel.model.aiEntry = nil
-        panel.model.aiState = .none
-        panel.model.aiNote = ""
         panel.present()
     }
 
@@ -254,12 +375,142 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// Reset the card to a fresh word/phrase state.
     private func resetWordCard() {
-        panel.model.instant = ""; panel.model.refined = ""
-        panel.model.structured = false; panel.model.analysis = nil
-        panel.model.systemEntry = nil; panel.model.aiEntry = nil; panel.model.aiState = .none
-        panel.model.aiProvenance = ""; panel.model.aiNote = ""
-        panel.model.action = .none; panel.model.refining = false
-        panel.model.essentialSubtitle = false
+        panel.model.beginCard(context: panel.model.context)
+    }
+
+    private func applyResultPayload(
+        _ payload: PanelResultPayload?,
+        enrichSavedEntry: Bool = false
+    ) {
+        guard let context = panel.model.context else { return }
+        guard let payload, payload.cardID == context.cardID else {
+            panel.model.copyText = nil
+            panel.model.vocabularyDraft = nil
+            panel.model.isVocabularySaved = false
+            panel.model.copyConfirmed = false
+            return
+        }
+
+        panel.model.copyText = payload.copyText
+        panel.model.copyConfirmed = false
+        panel.model.vocabularyDraft = payload.vocabularyDraft
+        guard let draft = payload.vocabularyDraft else {
+            panel.model.isVocabularySaved = false
+            return
+        }
+
+        let existing = vocabularyStore.entry(
+            term: draft.term,
+            languagePair: draft.languagePair
+        )
+        if enrichSavedEntry,
+           let existing,
+           let enrichment = PanelResultActionBuilder.enrichmentDraft(
+               existing: existing,
+               with: draft
+            ) {
+            do {
+                _ = try vocabularyStore.upsert(enrichment)
+                panel.model.clearResultActionError(kind: .enrichment)
+            } catch {
+                showResultActionError(
+                    String(localized: "Couldn't update the saved vocabulary entry."),
+                    error: error,
+                    kind: .enrichment
+                )
+            }
+        }
+        panel.model.isVocabularySaved = vocabularyStore.contains(
+            term: draft.term,
+            languagePair: draft.languagePair
+        )
+    }
+
+    private func publishWordResultActions(enrichSavedEntry: Bool = false) {
+        guard let context = panel.model.context else { return }
+        applyResultPayload(
+            PanelResultActionBuilder.word(
+                context: context,
+                systemEntry: panel.model.systemEntry,
+                aiEntry: panel.model.aiEntry
+            ),
+            enrichSavedEntry: enrichSavedEntry
+        )
+    }
+
+    private func publishPlainResultActions(_ text: String, allowsVocabulary: Bool) {
+        guard let context = panel.model.context else { return }
+        applyResultPayload(
+            PanelResultActionBuilder.plain(
+                context: context,
+                text: text,
+                allowsVocabulary: allowsVocabulary
+            )
+        )
+    }
+
+    private func publishStreamingCopy(_ text: String) {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        panel.model.copyText = text
+        panel.model.copyConfirmed = false
+    }
+
+    private func handleResultEvent(_ event: ResultCardEvent) {
+        do {
+            let outcome = try PanelResultActionPerformer.perform(
+                event,
+                currentCardID: panel.model.context?.cardID,
+                currentCopyText: panel.model.copyText,
+                currentVocabularyDraft: panel.model.vocabularyDraft,
+                vocabularyStore: vocabularyStore
+            )
+            switch outcome {
+            case .ignored:
+                return
+            case .copied:
+                let cardID = event.cardID
+                let feedbackGeneration = panel.model.applyResultActionOutcome(outcome)
+                panel.refresh()
+                Task { @MainActor [weak self] in
+                    try? await Task.sleep(for: .seconds(1.2))
+                    guard let self,
+                          self.panel.model.context?.cardID == cardID,
+                          self.panel.model.copyFeedbackGeneration == feedbackGeneration else {
+                        return
+                    }
+                    self.panel.model.copyConfirmed = false
+                    self.panel.refresh()
+                }
+            case let .saved(saved):
+                panel.model.applyResultActionOutcome(.saved(saved))
+                panel.refresh()
+            }
+        } catch {
+            let message: String
+            switch event {
+            case .copy:
+                message = String(localized: "Couldn't copy the result.")
+            case .setSaved:
+                message = String(localized: "Couldn't update the vocabulary library.")
+            }
+            let kind: ResultActionErrorKind = switch event {
+            case .copy: .copy
+            case .setSaved: .vocabulary
+            }
+            showResultActionError(message, error: error, kind: kind)
+        }
+    }
+
+    private func showResultActionError(
+        _ message: String,
+        error: Error,
+        kind: ResultActionErrorKind
+    ) {
+        panel.model.setResultActionError(
+            "\(message) · \(error.localizedDescription)",
+            kind: kind
+        )
+        panel.refresh()
     }
 
     /// A field counts as content only if it isn't an echoed template placeholder ("(in zh-Hans)") and
@@ -318,6 +569,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             // Honest footer: when an AI request is about to go out, don't show a pure-offline label.
             panel.model.subtitle = mode.alwaysAI ? String(localized: "System dictionary · offline · querying the AI dictionary…") : sysSubtitle
             panel.model.aiState = mode.alwaysAI ? .loading : .none
+            publishWordResultActions(enrichSavedEntry: true)
             panel.present()
             HistoryStore.record(source: source, result: sys.body.isEmpty ? sys.headword : sys.body, subtitle: sysSubtitle)
             if mode.alwaysAI { await runAIDictionary(id: id, kind: kind, source: source, src: src, tgt: tgt, hasSystem: true) }
@@ -376,6 +628,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 panel.model.aiState = .done
                 // Honest provenance in the footer + history (don't label a cloud AI result as offline).
                 panel.model.subtitle = hasSystem ? String(localized: "\(sysPrefix) + AI dictionary\(engine.provenance)") : String(localized: "AI dictionary\(engine.provenance)")
+                publishWordResultActions(enrichSavedEntry: true)
                 panel.refresh()
                 if !hasSystem {   // the system hit already recorded this lookup — don't double-record
                     let summary = aiSummary(entry, source: source) ?? source
@@ -408,10 +661,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// Triggered by the "用 AI 解释一次" button on an offline-miss card.
     private func runAIDictionaryButton() {
-        guard let (source, kind, src, tgt) = pendingAIWord else { return }
+        guard panel.model.action == .aiDictionary,
+              let (source, kind, src, tgt) = pendingAIWord else { return }
+        pendingAIWord = nil
         cancelCurrentTranslation()
         let id = requestSeq
-        resetWordCard()
+        panel.model.beginCard(
+            context: PanelRequestContext(
+                cardID: UUID(),
+                source: source,
+                kind: kind,
+                sourceLanguage: src,
+                targetLanguage: tgt
+            )
+        )
         panel.model.aiState = .loading
         panel.model.subtitle = String(localized: "Querying the AI dictionary…")
         panel.refresh()
@@ -431,34 +694,51 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// so the user isn't staring at a spinner while one big combined call completes.
     private func runSentence(id: Int, source: String, src: String, tgt: String, engine: StructuredRefineEngine) async {
         guard !Task.isCancelled, id == requestSeq else { return }
-        panel.model.instant = ""; panel.model.refined = ""; panel.model.systemEntry = nil
-        panel.model.aiEntry = nil; panel.model.aiState = .none
-        panel.model.structured = false; panel.model.analysis = nil
-        panel.model.action = .none; panel.model.refining = true
-        panel.model.essentialSubtitle = false
+        resetWordCard()
+        panel.model.refining = true
         panel.model.subtitle = String(localized: "\(src) → \(tgt) · \(engine.label) translating…")
         panel.present()
-        // Stage 1 — streamed translation.
+        // Stage 2 (analysis) runs CONCURRENTLY with stage 1: it analyses the SOURCE, not the translation,
+        // so it needn't wait for the stream to finish. The full card lands at max(translation, analysis)
+        // instead of their sum. If the translation fails below, the early return cancels this child task.
+        async let analysisResult = engine.structured(
+            kind: .sentence, source: source, firstLanguage: tgt, secondLanguage: TargetLanguage.firstLanguage)
+        // Stage 1 — streamed translation; retry once on an empty 200 (transient, mirrors runPrimary).
         var translation = ""
-        do {
-            for try await text in engine.refine(source: source, draft: "", targetCode: tgt) {
+        for _ in 0..<2 {
+            translation = ""
+            do {
+                for try await text in engine.refine(source: source, draft: "", targetCode: tgt) {
+                    guard !Task.isCancelled, id == requestSeq else { return }
+                    translation = text
+                    panel.model.refined = text
+                    publishStreamingCopy(text)
+                    panel.refresh()
+                }
+            } catch {
                 guard !Task.isCancelled, id == requestSeq else { return }
-                translation = text; panel.model.refined = text; panel.refresh()
+                panel.model.refining = false
+                panel.model.refined = translation.isEmpty ? source : translation
+                if translation.isEmpty {
+                    applyResultPayload(nil)
+                } else {
+                    publishPlainResultActions(translation, allowsVocabulary: false)
+                }
+                panel.model.subtitle = String(localized: "Translation failed (\(engine.label)\(engine.provenance)) · \(error.localizedDescription)")
+                panel.model.essentialSubtitle = true   // failure note must survive 简洁浮窗
+                panel.refresh()
+                if !translation.isEmpty { HistoryStore.record(source: source, result: translation, subtitle: panel.model.subtitle) }
+                return
             }
-        } catch {
             guard !Task.isCancelled, id == requestSeq else { return }
-            panel.model.refining = false
-            panel.model.refined = translation.isEmpty ? source : translation
-            panel.model.subtitle = String(localized: "Translation failed (\(engine.label)\(engine.provenance)) · \(error.localizedDescription)")
-            panel.model.essentialSubtitle = true   // failure note must survive 简洁浮窗
-            panel.refresh()
-            if !translation.isEmpty { HistoryStore.record(source: source, result: translation, subtitle: panel.model.subtitle) }
-            return
+            if !translation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { break }   // content → stage 2
+            // empty 200 → loop retries once
         }
         guard !Task.isCancelled, id == requestSeq else { return }
         guard !translation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             panel.model.refining = false
             panel.model.refined = source
+            applyResultPayload(nil)
             panel.model.subtitle = String(localized: "Translation failed (\(engine.label)\(engine.provenance)) · empty model response")
             panel.model.essentialSubtitle = true
             panel.refresh(); return
@@ -468,10 +748,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         panel.refresh()
         var analysisFailed = false
         do {
-            // firstLanguage carries the resolved TARGET; secondLanguage carries the user's NATIVE language
-            // so grammar explanations are readable even when translating out of it (e.g. zh sentence → en).
-            let result = try await engine.structured(kind: .sentence, source: source,
-                                                     firstLanguage: tgt, secondLanguage: TargetLanguage.firstLanguage)
+            // Await the analysis started concurrently above (firstLanguage = resolved TARGET; secondLanguage
+            // = the user's NATIVE language, so grammar points read in the native tongue even when translating
+            // out of it). It has been running during the translation stream, so this usually returns at once.
+            let result = try await analysisResult
             guard !Task.isCancelled, id == requestSeq else { return }
             if case .sentence(var analysis) = result {
                 analysis.refinedTranslation = translation   // keep the stage-1 translation stable (no flicker)
@@ -490,6 +770,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Translation succeeded either way; be honest when only the syntax analysis failed.
         panel.model.subtitle = "\(src) → \(tgt) · \(engine.label)\(engine.provenance)" + (analysisFailed ? String(localized: " · analysis failed") : "")
         panel.model.essentialSubtitle = analysisFailed   // partial failure stays visible in 简洁浮窗
+        publishPlainResultActions(translation, allowsVocabulary: false)
         panel.refresh()
         HistoryStore.record(source: source, result: translation, subtitle: panel.model.subtitle)
     }
@@ -507,61 +788,87 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func runPrimary(id: Int, source: String, src: String, tgt: String, refiner: RefineEngine,
                            reusesCard: Bool = false) async {
         guard !Task.isCancelled, id == requestSeq else { return }
-        panel.model.instant = ""
-        panel.model.refined = ""
-        panel.model.structured = false
-        panel.model.analysis = nil
-        panel.model.systemEntry = nil
-        panel.model.aiEntry = nil
-        panel.model.aiState = .none
-        panel.model.action = .none
+        resetWordCard()
         panel.model.refining = true
-        panel.model.essentialSubtitle = false
         panel.model.subtitle = String(localized: "\(src) → \(tgt) · \(refiner.label) translating…")
         if reusesCard { panel.refresh() } else { panel.present() }  // avoid a double-present flash on fallback
+        // Retry once if NOTHING streams: a transient empty 200 (some models occasionally emit no content
+        // delta) or a handshake blip should self-heal rather than fail. A partial stream is kept as-is —
+        // re-streaming would flicker the card — so only an empty result triggers the retry.
         var accumulated = ""
-        do {
-            for try await text in refiner.refine(source: source, draft: "", targetCode: tgt) {
+        var lastError: Error = RefineError.message(String(localized: "Empty model response"))
+        for _ in 0..<2 {
+            accumulated = ""
+            do {
+                for try await text in refiner.refine(source: source, draft: "", targetCode: tgt) {
+                    guard !Task.isCancelled, id == requestSeq else { return }
+                    accumulated = text
+                    panel.model.refined = text
+                    publishStreamingCopy(text)
+                    panel.refresh()
+                }
                 guard !Task.isCancelled, id == requestSeq else { return }
-                accumulated = text
-                panel.model.refined = text
-                panel.refresh()
+                if !accumulated.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    panel.model.refining = false
+                    panel.model.subtitle = "\(src) → \(tgt) · \(refiner.label)\(refiner.provenance)"
+                    publishPlainResultActions(accumulated, allowsVocabulary: true)
+                    panel.refresh()
+                    HistoryStore.record(source: source, result: accumulated, subtitle: panel.model.subtitle)
+                    return
+                }
+                lastError = RefineError.message(String(localized: "Empty model response"))   // empty 200 → retry
+            } catch {
+                guard !Task.isCancelled, id == requestSeq else { return }
+                lastError = error
+                let partial = accumulated.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !partial.isEmpty {
+                    // Content streamed then interrupted → keep it; mark interrupted (don't retry/flicker).
+                    panel.model.refining = false
+                    panel.model.subtitle = String(localized: "Translation interrupted (\(refiner.label)\(refiner.provenance)) · \(error.localizedDescription)")
+                    panel.model.essentialSubtitle = true
+                    publishPlainResultActions(accumulated, allowsVocabulary: false)
+                    HistoryStore.record(source: source, result: accumulated, subtitle: panel.model.subtitle)
+                    panel.refresh()
+                    return
+                }
             }
-            guard !Task.isCancelled, id == requestSeq else { return }
-            // A 200 with no usable delta is NOT a success — there's no NMT floor now.
-            guard !accumulated.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                throw RefineError.message(String(localized: "Empty model response"))
-            }
-            panel.model.refining = false
-            panel.model.subtitle = "\(src) → \(tgt) · \(refiner.label)\(refiner.provenance)"
-            panel.refresh()
-            HistoryStore.record(source: source, result: accumulated, subtitle: panel.model.subtitle)
-        } catch {
-            guard !Task.isCancelled, id == requestSeq else { return }
-            panel.model.refining = false
-            let partial = accumulated.trimmingCharacters(in: .whitespacesAndNewlines)
-            if partial.isEmpty {
-                // Nothing streamed → show the original + failure.
-                panel.model.refined = source
-                panel.model.subtitle = String(localized: "Translation failed (\(refiner.label)\(refiner.provenance)) · \(error.localizedDescription)")
-                panel.model.essentialSubtitle = true   // failure note must survive 简洁浮窗
-            } else {
-                // Keep what streamed; mark it interrupted. Record the PARTIAL, never source→source.
-                panel.model.subtitle = String(localized: "Translation interrupted (\(refiner.label)\(refiner.provenance)) · \(error.localizedDescription)")
-                panel.model.essentialSubtitle = true
-                HistoryStore.record(source: source, result: accumulated, subtitle: panel.model.subtitle)
-            }
-            panel.refresh()
         }
+        // Both attempts produced nothing → show the original + failure.
+        guard !Task.isCancelled, id == requestSeq else { return }
+        panel.model.refining = false
+        panel.model.refined = source
+        applyResultPayload(nil)
+        panel.model.subtitle = String(localized: "Translation failed (\(refiner.label)\(refiner.provenance)) · \(lastError.localizedDescription)")
+        panel.model.essentialSubtitle = true   // failure note must survive 简洁浮窗
+        panel.refresh()
     }
 
     private func cancelCurrentTranslation() {
         currentTranslation?.cancel()
         currentTranslation = nil
+        pendingAIWord = nil
         requestSeq &+= 1   // invalidate any in-flight result so a late snapshot can't render
+        panel.model.invalidateResultActions()
     }
 
     @objc func openSettings() { settingsController.show() }
+    @objc func openVocabulary() { vocabularyController.show() }
+
+    func userWindowDidOpen(_ owner: AnyObject) {
+        activeUserWindows.insert(ObjectIdentifier(owner))
+        NSApp.setActivationPolicy(.regular)
+    }
+
+    func userWindowWillClose(_ owner: AnyObject) {
+        activeUserWindows.remove(ObjectIdentifier(owner))
+        if activeUserWindows.isEmpty {
+            if launchMode.isDemo {
+                NSApp.terminate(nil)
+            } else {
+                NSApp.setActivationPolicy(.accessory)
+            }
+        }
+    }
 
     /// Standard main menu so text fields get Cut/Copy/Paste/Select All (an LSUIElement app has none,
     /// so ⌘C/⌘V/⌘X/⌘A wouldn't reach the first responder — that's why Settings fields couldn't paste).
@@ -576,6 +883,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         appMenu.addItem(.separator())
         let prefs = NSMenuItem(title: String(localized: "Settings…"), action: #selector(AppDelegate.openSettings), keyEquivalent: ",")
         appMenu.addItem(prefs)
+        appMenu.addItem(
+            withTitle: String(localized: "Vocabulary"),
+            action: #selector(AppDelegate.openVocabulary),
+            keyEquivalent: ""
+        )
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: String(localized: "Hide GlossPop"), action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         appMenu.addItem(withTitle: String(localized: "Quit GlossPop"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
@@ -649,6 +961,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let historyItem = NSMenuItem(title: String(localized: "Recent Translations"), action: nil, keyEquivalent: "")
         historyItem.submenu = buildHistoryMenu()
         menu.addItem(historyItem)
+        let vocabulary = NSMenuItem(
+            title: String(localized: "Vocabulary"),
+            action: #selector(openVocabulary),
+            keyEquivalent: ""
+        )
+        vocabulary.target = self
+        menu.addItem(vocabulary)
 
         // A major-OS upgrade can de-approve the login item with no in-app signal; surface the live
         // state as a passive menu action (no popup) that deep-links to System Settings ▸ Login Items.
@@ -705,14 +1024,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return one.count > n ? String(one.prefix(n)) + "…" : one
     }
 
-    @objc private func captureFromMenu() { handleHotKey() }
+    @objc private func appActivated(_ note: Notification) {
+        guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+              app.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return }
+        sourceAppBeforeMenu = app
+    }
+
+    @objc private func captureFromMenu() {
+        // The status menu took key focus; bring the source app back and let focus settle before reading its
+        // selection (otherwise AX sees our app / nothing, and a synthetic ⌘C copies from the wrong place).
+        if let src = sourceAppBeforeMenu, !src.isTerminated,
+           src.processIdentifier != ProcessInfo.processInfo.processIdentifier {
+            src.activate()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in self?.handleHotKey() }
+        } else {
+            handleHotKey()
+        }
+    }
 
     @objc private func approveLoginItem() { LoginItem.openSystemSettings() }
 
     @objc private func openHistory(_ sender: NSMenuItem) {
         guard let entry = sender.representedObject as? HistoryEntry else { return }
         cancelCurrentTranslation()
-        present(instant: entry.result, subtitle: String(localized: "\(entry.subtitle) · history"))
+        let context = PanelRequestContext(
+            cardID: UUID(),
+            source: entry.source,
+            kind: .sentence,
+            sourceLanguage: "auto",
+            targetLanguage: "auto"
+        )
+        panel.model.beginCard(context: context)
+        panel.model.refined = entry.result
+        panel.model.subtitle = String(localized: "\(entry.subtitle) · history")
+        applyResultPayload(
+            PanelResultActionBuilder.plain(
+                context: context,
+                text: entry.result,
+                allowsVocabulary: false
+            )
+        )
+        panel.present()
     }
 
     @objc private func clearHistory() {

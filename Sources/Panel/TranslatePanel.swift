@@ -3,6 +3,12 @@ import SwiftUI
 
 enum CardAction: Equatable { case none, openAccessibility, openSettings, aiDictionary }
 enum AIDictState: Equatable { case none, loading, done, failed }
+enum ResultActionErrorKind: Equatable { case copy, vocabulary, enrichment }
+
+struct ResultActionFailure: Equatable {
+    let kind: ResultActionErrorKind
+    let message: String
+}
 
 // Observable card state — lets instant→refine stream into the SAME card (PLAN §2.2/§2.5).
 @MainActor @Observable
@@ -23,7 +29,78 @@ final class PanelModel {
     var aiNote: String = ""                // failed-state explanation (未配置 / 失败 / 暂无结果)
     var essentialSubtitle: Bool = false    // failure/interruption notes must survive 简洁浮窗
     var compact: Bool = PanelConfig.compact // mirrored so an OPEN panel re-renders when toggled
+    var context: PanelRequestContext?
+    var copyText: String?
+    var vocabularyDraft: VocabularyDraft?
+    var isVocabularySaved = false
+    var copyConfirmed = false
+    private(set) var copyFeedbackGeneration: UInt64 = 0
+    private(set) var resultActionError: ResultActionFailure?
     var isWordCard: Bool { systemEntry != nil || aiState != .none }
+
+    func beginCard(context: PanelRequestContext?) {
+        self.context = context
+        instant = ""
+        refined = ""
+        subtitle = ""
+        action = .none
+        refining = false
+        structured = false
+        analysis = nil
+        systemEntry = nil
+        aiEntry = nil
+        aiState = .none
+        aiProvenance = ""
+        aiNote = ""
+        essentialSubtitle = false
+        copyText = nil
+        vocabularyDraft = nil
+        isVocabularySaved = false
+        copyConfirmed = false
+        copyFeedbackGeneration &+= 1
+        resultActionError = nil
+    }
+
+    func invalidateResultActions() {
+        context = nil
+        copyText = nil
+        vocabularyDraft = nil
+        isVocabularySaved = false
+        copyConfirmed = false
+        copyFeedbackGeneration &+= 1
+        resultActionError = nil
+    }
+
+    @discardableResult
+    func applyResultActionOutcome(_ outcome: PanelResultActionOutcome) -> UInt64 {
+        switch outcome {
+        case .ignored:
+            break
+        case .copied:
+            clearResultActionError(kind: .copy)
+            copyFeedbackGeneration &+= 1
+            copyConfirmed = true
+        case let .saved(saved):
+            clearResultActionError(kind: .vocabulary)
+            clearResultActionError(kind: .enrichment)
+            isVocabularySaved = saved
+        }
+        return copyFeedbackGeneration
+    }
+
+    func setResultActionError(_ message: String, kind: ResultActionErrorKind) {
+        if kind == .copy {
+            copyFeedbackGeneration &+= 1
+            copyConfirmed = false
+        }
+        resultActionError = ResultActionFailure(kind: kind, message: message)
+    }
+
+    func clearResultActionError(kind: ResultActionErrorKind) {
+        if resultActionError?.kind == kind {
+            resultActionError = nil
+        }
+    }
 }
 
 // Near-cursor, non-activating result panel (PLAN §5.3). Borderless + .nonactivatingPanel — M0 confirmed
@@ -34,6 +111,7 @@ final class TranslatePanelController {
     let model = PanelModel()
     var onDismiss: (() -> Void)?
     var onOpenSettings: (() -> Void)?
+    var onResultEvent: ((ResultCardEvent) -> Void)?
 
     private var panel: NSPanel?
     private var hosting: NSHostingView<ResultCard>?
@@ -83,8 +161,8 @@ final class TranslatePanelController {
         p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         let host = NSHostingView(rootView: ResultCard(
             model: model,
-            onAction: { [weak self] in self?.handleAction() },
-            onDismiss: { [weak self] in self?.dismiss() }))
+            onAction: { [weak self] action in self?.handleAction(action) },
+            onResultEvent: { [weak self] event in self?.onResultEvent?(event) }))
         // REAL chrome at the window level: SwiftUI materials can only blend within the
         // window — over a clear panel they tint without blurring, fake frost. Tahoe gets Liquid Glass;
         // macOS 15 gets the literal Look Up material (popover, behind-window).
@@ -182,8 +260,9 @@ final class TranslatePanelController {
 
     var onRunAIDictionary: (() -> Void)?
 
-    private func handleAction() {
-        switch model.action {
+    private func handleAction(_ action: CardAction) {
+        guard action != .none, action == model.action else { return }
+        switch action {
         case .openAccessibility: AccessibilityPermission.openSettings()
         case .openSettings: dismiss(); onOpenSettings?()
         case .aiDictionary: onRunAIDictionary?()
@@ -229,8 +308,8 @@ final class TranslatePanelController {
 
 private struct ResultCard: View {
     let model: PanelModel
-    let onAction: () -> Void
-    let onDismiss: () -> Void
+    let onAction: (CardAction) -> Void
+    let onResultEvent: (ResultCardEvent) -> Void
 
     private var actionTitle: String? {
         switch model.action {
@@ -239,6 +318,10 @@ private struct ResultCard: View {
         case .aiDictionary: return String(localized: "Explain with AI")
         case .none: return nil
         }
+    }
+
+    private var hasResultActions: Bool {
+        model.context != nil && (model.copyText != nil || model.vocabularyDraft != nil)
     }
 
     var body: some View {
@@ -319,12 +402,60 @@ private struct ResultCard: View {
         // The footer spinner is redundant while the inline first-line loader is up; compact result cards
         // with nothing else to show get no footer row at all.
         let footerSpinner = model.refining && !showsInlineLoader
-        if showSubtitle || footerSpinner || actionTitle != nil {
+        if showSubtitle || model.resultActionError != nil || footerSpinner || actionTitle != nil || hasResultActions {
             HStack(spacing: 8) {
-                if showSubtitle { Text(model.subtitle).font(.caption).foregroundStyle(.secondary) }
+                if let resultActionError = model.resultActionError {
+                    Text(resultActionError.message)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else if showSubtitle {
+                    Text(model.subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 if footerSpinner { ProgressView().controlSize(.mini) }
                 Spacer()
-                if let actionTitle { Button(actionTitle, action: onAction).controlSize(.small) }
+                if let actionTitle {
+                    let action = model.action
+                    Button(actionTitle) { onAction(action) }
+                        .controlSize(.small)
+                }
+                if let context = model.context, model.copyText != nil {
+                    Button {
+                        onResultEvent(.copy(cardID: context.cardID))
+                    } label: {
+                        Image(systemName: model.copyConfirmed ? "checkmark" : "doc.on.doc")
+                            .frame(width: 20, height: 20)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(model.copyConfirmed ? Color.accentColor : .secondary)
+                    .help(String(localized: "Copy Result"))
+                    .accessibilityLabel(String(localized: "Copy Result"))
+                }
+                if let context = model.context, model.vocabularyDraft != nil {
+                    let title = model.isVocabularySaved
+                        ? String(localized: "Remove from Vocabulary")
+                        : String(localized: "Save to Vocabulary")
+                    Button {
+                        onResultEvent(
+                            .setSaved(
+                                cardID: context.cardID,
+                                saved: !model.isVocabularySaved
+                            )
+                        )
+                    } label: {
+                        Image(systemName: model.isVocabularySaved ? "bookmark.fill" : "bookmark")
+                            .frame(width: 20, height: 20)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(model.isVocabularySaved ? Color.accentColor : .secondary)
+                    .help(title)
+                    .accessibilityLabel(title)
+                }
             }
         }
     }
@@ -332,7 +463,7 @@ private struct ResultCard: View {
 
 // MARK: - Input-aware cards (M3.5)
 
-private struct DictionaryCard: View {
+struct DictionaryCard: View {
     let entry: DictionaryEntry
     // Drop placeholder entries the model echoes from the schema (empty phrase+meaning rendered as a stray ":").
     private var idioms: [Idiom] { entry.idioms.filter { !$0.phrase.isEmpty || !$0.meaning.isEmpty } }
@@ -419,7 +550,7 @@ private struct WordPhraseCard: View {
     }
 }
 
-private struct SystemDictionaryCard: View {
+struct SystemDictionaryCard: View {
     let entry: SystemDictionary.Entry
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {

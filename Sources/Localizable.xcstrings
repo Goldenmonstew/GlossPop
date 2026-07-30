@@ -7229,6 +7229,810 @@
         }
       }
     },
+    "%lld of %lld shown": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "%lld von %lld angezeigt"}},
+        "es": {"stringUnit": {"state": "translated", "value": "%lld de %lld visibles"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "%lld sur %lld affichés"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "%lld / %lld件を表示"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "%lld/%lld개 표시"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Показано %lld из %lld"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "显示 %lld / %lld 条"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "顯示 %lld / %lld 筆"}}
+      }
+    },
+    "%lld saved": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "%lld gespeichert"}},
+        "es": {"stringUnit": {"state": "translated", "value": "%lld guardados"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "%lld enregistrés"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "%lld件保存済み"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "%lld개 저장됨"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Сохранено: %lld"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "已保存 %lld 条"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "已儲存 %lld 筆"}}
+      }
+    },
+    "A damaged vocabulary file was preserved and a new library was started.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Eine beschädigte Wortschatzdatei wurde gesichert und eine neue Sammlung angelegt."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Se conservó un archivo de vocabulario dañado y se creó una biblioteca nueva."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Le fichier de vocabulaire endommagé a été conservé et une nouvelle bibliothèque a été créée."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "破損した単語帳ファイルを保存し、新しい単語帳を作成しました。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "손상된 단어장 파일을 보존하고 새 단어장을 시작했습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Повреждённый файл словаря сохранён, создана новая библиотека."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "已保留损坏的生词本文件，并创建了新的生词本。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "已保留損毀的生詞本檔案，並建立新的生詞本。"}}
+      }
+    },
+    "A vocabulary entry needs a term.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Ein Wortschatzeintrag benötigt einen Begriff."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Una entrada de vocabulario necesita un término."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Une entrée de vocabulaire doit contenir un terme."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳の項目には語句が必要です。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 항목에는 단어나 구문이 필요합니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Для записи в словаре требуется термин."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "生词本条目需要填写词语。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "生詞本項目需要填寫詞語。"}}
+      }
+    },
+    "A vocabulary entry needs both source and target languages.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Ein Wortschatzeintrag benötigt eine Ausgangs- und eine Zielsprache."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Una entrada de vocabulario necesita los idiomas de origen y destino."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Une entrée de vocabulaire doit indiquer les langues source et cible."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳の項目には原文と訳文の両方の言語が必要です。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 항목에는 원본 언어와 대상 언어가 모두 필요합니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Для записи в словаре нужны исходный и целевой языки."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "生词本条目需要同时指定源语言和目标语言。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "生詞本項目需要同時指定來源語言和目標語言。"}}
+      }
+    },
+    "A vocabulary entry needs dictionary content.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Ein Wortschatzeintrag benötigt Wörterbuchinhalt."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Una entrada de vocabulario necesita contenido de diccionario."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Une entrée de vocabulaire doit contenir des données de dictionnaire."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳の項目には辞書の内容が必要です。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 항목에는 사전 내용이 필요합니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Для записи в словаре требуется словарное содержимое."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "生词本条目需要包含词典内容。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "生詞本項目需要包含辭典內容。"}}
+      }
+    },
+    "AI Dictionary": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "KI-Lexikon"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Diccionario de IA"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Dictionnaire IA"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "AI辞書"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "AI 사전"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "ИИ-словарь"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "AI 词典"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "AI 辭典"}}
+      }
+    },
+    "All Languages": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Alle Sprachen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Todos los idiomas"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Toutes les langues"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "すべての言語"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "모든 언어"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Все языки"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "所有语言"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "所有語言"}}
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Abbrechen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Cancelar"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Annuler"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "キャンセル"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "취소"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Отмена"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "取消"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "取消"}}
+      }
+    },
+    "Choose an entry to see its complete saved dictionary card.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wähle einen Eintrag aus, um die vollständig gespeicherte Wörterbuchkarte zu sehen."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Selecciona una entrada para ver su ficha de diccionario completa."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Sélectionnez une entrée pour afficher sa fiche de dictionnaire complète."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "項目を選択すると、保存した辞書カード全体が表示されます。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "항목을 선택하면 저장된 사전 카드 전체를 볼 수 있습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Выберите запись, чтобы увидеть всю сохранённую словарную карточку."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "选择一个条目以查看完整的已存词典卡片。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "選取項目以查看完整的已儲存辭典卡片。"}}
+      }
+    },
+    "Clear all %lld vocabulary entries?": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Alle %lld Wortschatzeinträge löschen?"}},
+        "es": {"stringUnit": {"state": "translated", "value": "¿Borrar las %lld entradas de vocabulario?"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Effacer les %lld entrées de vocabulaire ?"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳の%lld件をすべて消去しますか？"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 항목 %lld개를 모두 지우겠습니까?"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Удалить все записи словаря (%lld)?"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "要清除全部 %lld 条生词吗？"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "要清除全部 %lld 筆生詞嗎？"}}
+      }
+    },
+    "Clear Search": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Suche löschen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Borrar búsqueda"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Effacer la recherche"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "検索を消去"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "검색 지우기"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Очистить поиск"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "清除搜索"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "清除搜尋"}}
+      }
+    },
+    "Clear the saved vocabulary entry?": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Den gespeicherten Wortschatzeintrag löschen?"}},
+        "es": {"stringUnit": {"state": "translated", "value": "¿Borrar la entrada de vocabulario guardada?"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Effacer l’entrée de vocabulaire enregistrée ?"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "保存した単語帳の項目を消去しますか？"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "저장된 단어장 항목을 지우겠습니까?"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Удалить сохранённую запись словаря?"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "要清除已保存的生词吗？"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "要清除已儲存的生詞嗎？"}}
+      }
+    },
+    "Clear Vocabulary": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wortschatz löschen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Borrar vocabulario"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Effacer le vocabulaire"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳を消去"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 지우기"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Очистить словарь"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "清空生词本"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "清空生詞本"}}
+      }
+    },
+    "Clear Vocabulary…": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wortschatz löschen…"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Borrar vocabulario…"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Effacer le vocabulaire…"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳を消去…"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 지우기…"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Очистить словарь…"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "清空生词本…"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "清空生詞本…"}}
+      }
+    },
+    "Copy Result": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Ergebnis kopieren"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Copiar resultado"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Copier le résultat"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "結果をコピー"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "결과 복사"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Скопировать результат"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "拷贝结果"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "拷貝結果"}}
+      }
+    },
+    "Couldn't copy the result.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Das Ergebnis konnte nicht kopiert werden."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No se pudo copiar el resultado."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Impossible de copier le résultat."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "結果をコピーできませんでした。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "결과를 복사할 수 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Не удалось скопировать результат."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法拷贝结果。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法拷貝結果。"}}
+      }
+    },
+    "Couldn't export the vocabulary library.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Der Wortschatz konnte nicht exportiert werden."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No se pudo exportar la biblioteca de vocabulario."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Impossible d’exporter la bibliothèque de vocabulaire."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳を書き出せませんでした。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장을 내보낼 수 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Не удалось экспортировать словарь."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法导出生词本。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法匯出生詞本。"}}
+      }
+    },
+    "Couldn't update the saved vocabulary entry.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Der gespeicherte Wortschatzeintrag konnte nicht aktualisiert werden."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No se pudo actualizar la entrada de vocabulario guardada."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Impossible de mettre à jour l’entrée de vocabulaire enregistrée."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "保存した単語帳の項目を更新できませんでした。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "저장된 단어장 항목을 업데이트할 수 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Не удалось обновить сохранённую запись словаря."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法更新已保存的生词条目。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法更新已儲存的生詞項目。"}}
+      }
+    },
+    "Couldn't update the vocabulary library.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Der Wortschatz konnte nicht aktualisiert werden."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No se pudo actualizar la biblioteca de vocabulario."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Impossible de mettre à jour la bibliothèque de vocabulaire."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳を更新できませんでした。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장을 업데이트할 수 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Не удалось обновить словарь."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法更新生词本。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法更新生詞本。"}}
+      }
+    },
+    "Dismiss": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Ausblenden"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Cerrar"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Fermer"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "閉じる"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "닫기"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Закрыть"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "关闭"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "關閉"}}
+      }
+    },
+    "Export": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Exportieren"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Exportar"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Exporter"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "書き出す"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "내보내기"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Экспортировать"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "导出"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "匯出"}}
+      }
+    },
+    "Export All as CSV…": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Alles als CSV exportieren…"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Exportar todo como CSV…"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Tout exporter au format CSV…"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "すべてCSVで書き出す…"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "모두 CSV로 내보내기…"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Экспортировать всё в CSV…"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "全部导出为 CSV…"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "全部匯出為 CSV…"}}
+      }
+    },
+    "Export All for Anki…": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Alles für Anki exportieren…"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Exportar todo para Anki…"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Tout exporter pour Anki…"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "すべてAnki用に書き出す…"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "모두 Anki용으로 내보내기…"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Экспортировать всё для Anki…"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "全部导出为 Anki 格式…"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "全部匯出為 Anki 格式…"}}
+      }
+    },
+    "Export Complete": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Export abgeschlossen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Exportación completada"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Exportation terminée"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "書き出し完了"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "내보내기 완료"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Экспорт завершён"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "导出完成"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "匯出完成"}}
+      }
+    },
+    "Export Error": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Exportfehler"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Error de exportación"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Erreur d’exportation"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "書き出しエラー"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "내보내기 오류"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Ошибка экспорта"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "导出错误"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "匯出錯誤"}}
+      }
+    },
+    "Export Vocabulary": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wortschatz exportieren"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Exportar vocabulario"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Exporter le vocabulaire"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳を書き出す"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 내보내기"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Экспорт словаря"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "导出生词本"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "匯出生詞本"}}
+      }
+    },
+    "Exported %lld vocabulary entries to “%@”.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "%lld Wortschatzeinträge wurden nach „%@“ exportiert."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Se exportaron %lld entradas de vocabulario a “%@”."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "%lld entrées de vocabulaire ont été exportées vers « %@ »."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "%lld件の単語帳項目を「%@」に書き出しました。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 항목 %lld개를 “%@”에 내보냈습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Записей экспортировано: %lld. Файл: «%@»."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "已将 %lld 条生词导出到“%@”。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "已將 %lld 筆生詞匯出至「%@」。"}}
+      }
+    },
+    "Exported 1 vocabulary entry to “%@”.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "1 Wortschatzeintrag wurde nach „%@“ exportiert."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Se exportó 1 entrada de vocabulario a “%@”."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "1 entrée de vocabulaire a été exportée vers « %@ »."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳の1件を「%@」に書き出しました。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 항목 1개를 “%@”에 내보냈습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "1 запись экспортирована в файл «%@»."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "已将 1 条生词导出到“%@”。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "已將 1 筆生詞匯出至「%@」。"}}
+      }
+    },
+    "Exports all %lld saved vocabulary entries.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Exportiert alle %lld gespeicherten Wortschatzeinträge."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Exporta las %lld entradas de vocabulario guardadas."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Exporte les %lld entrées de vocabulaire enregistrées."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "保存済みの単語帳項目%lld件をすべて書き出します。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "저장된 단어장 항목 %lld개를 모두 내보냅니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Экспорт всех сохранённых записей словаря (%lld)."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "导出全部 %lld 条已保存生词。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "匯出全部 %lld 筆已儲存生詞。"}}
+      }
+    },
+    "Exports the saved vocabulary entry.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Exportiert den gespeicherten Wortschatzeintrag."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Exporta la entrada de vocabulario guardada."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Exporte l’entrée de vocabulaire enregistrée."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "保存済みの単語帳項目を書き出します。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "저장된 단어장 항목을 내보냅니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Экспорт сохранённой записи словаря."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "导出已保存的生词。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "匯出已儲存的生詞。"}}
+      }
+    },
+    "Filter by Language Pair": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Nach Sprachenpaar filtern"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Filtrar por par de idiomas"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Filtrer par paire de langues"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "言語ペアで絞り込む"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "언어 쌍으로 필터링"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Фильтр по языковой паре"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "按语言对筛选"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "依語言配對篩選"}}
+      }
+    },
+    "Language Pair": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Sprachenpaar"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Par de idiomas"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Paire de langues"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "言語ペア"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "언어 쌍"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Языковая пара"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "语言对"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "語言配對"}}
+      }
+    },
+    "More": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Mehr"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Más"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Plus"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "その他"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "더 보기"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Ещё"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "更多"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "更多"}}
+      }
+    },
+    "No entries match “%@”.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Keine Einträge entsprechen „%@“."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Ninguna entrada coincide con “%@”."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Aucune entrée ne correspond à « %@ »."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "「%@」に一致する項目はありません。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "“%@”과(와) 일치하는 항목이 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Нет записей по запросу «%@»."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "没有与“%@”匹配的条目。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "沒有符合「%@」的項目。"}}
+      }
+    },
+    "No entries use %@.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Keine Einträge verwenden %@."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Ninguna entrada usa %@."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Aucune entrée n’utilise %@."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "%@を使用する項目はありません。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "%@을(를) 사용하는 항목이 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Нет записей для %@."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "没有使用 %@ 的条目。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "沒有使用 %@ 的項目。"}}
+      }
+    },
+    "No Matching Vocabulary": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Keine passenden Einträge"}},
+        "es": {"stringUnit": {"state": "translated", "value": "No hay entradas coincidentes"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Aucune entrée correspondante"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "一致する項目がありません"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "일치하는 항목이 없음"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Подходящих записей нет"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "没有匹配的生词"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "沒有符合的生詞"}}
+      }
+    },
+    "No Saved Vocabulary": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Kein Wortschatz gespeichert"}},
+        "es": {"stringUnit": {"state": "translated", "value": "No hay vocabulario guardado"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Aucun vocabulaire enregistré"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "保存した単語がありません"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "저장된 단어가 없음"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Сохранённых слов нет"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "尚未保存生词"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "尚未儲存生詞"}}
+      }
+    },
+    "No saved vocabulary to export.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Kein gespeicherter Wortschatz zum Exportieren."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No hay vocabulario guardado para exportar."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Aucun vocabulaire enregistré à exporter."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "書き出す保存済み単語がありません。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "내보낼 저장된 단어가 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Нет сохранённых записей для экспорта."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "没有可导出的已保存生词。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "沒有可匯出的已儲存生詞。"}}
+      }
+    },
+    "OK": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "OK"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Aceptar"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "OK"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "OK"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "확인"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "ОК"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "好"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "好"}}
+      }
+    },
+    "Remove": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Entfernen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Eliminar"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Supprimer"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "削除"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "제거"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Удалить"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "移除"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "移除"}}
+      }
+    },
+    "Remove Entry": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Eintrag entfernen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Eliminar entrada"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Supprimer l’entrée"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "項目を削除"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "항목 제거"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Удалить запись"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "移除条目"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "移除項目"}}
+      }
+    },
+    "Remove from Vocabulary": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Aus dem Wortschatz entfernen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Eliminar del vocabulario"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Supprimer du vocabulaire"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳から削除"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장에서 제거"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Удалить из словаря"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "从生词本移除"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "從生詞本移除"}}
+      }
+    },
+    "Remove Vocabulary Entry?": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wortschatzeintrag entfernen?"}},
+        "es": {"stringUnit": {"state": "translated", "value": "¿Eliminar la entrada de vocabulario?"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Supprimer l’entrée de vocabulaire ?"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳の項目を削除しますか？"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 항목을 제거하겠습니까?"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Удалить запись словаря?"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "要移除生词条目吗？"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "要移除生詞項目嗎？"}}
+      }
+    },
+    "Remove “%@” from Vocabulary?": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "„%@“ aus dem Wortschatz entfernen?"}},
+        "es": {"stringUnit": {"state": "translated", "value": "¿Eliminar “%@” del vocabulario?"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Supprimer « %@ » du vocabulaire ?"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "「%@」を単語帳から削除しますか？"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "“%@”을(를) 단어장에서 제거하겠습니까?"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Удалить «%@» из словаря?"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "要从生词本移除“%@”吗？"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "要從生詞本移除「%@」嗎？"}}
+      }
+    },
+    "Save to Vocabulary": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Im Wortschatz speichern"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Guardar en vocabulario"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Enregistrer dans le vocabulaire"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳に保存"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장에 저장"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Сохранить в словарь"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "保存到生词本"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "儲存至生詞本"}}
+      }
+    },
+    "Search Vocabulary": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wortschatz suchen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Buscar en vocabulario"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Rechercher dans le vocabulaire"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳を検索"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 검색"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Поиск по словарю"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "搜索生词本"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "搜尋生詞本"}}
+      }
+    },
+    "Select a Vocabulary Entry": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wortschatzeintrag auswählen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Selecciona una entrada de vocabulario"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Sélectionnez une entrée de vocabulaire"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳の項目を選択"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 항목 선택"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Выберите запись словаря"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "选择生词条目"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "選取生詞項目"}}
+      }
+    },
+    "Select a word or phrase, then use the bookmark in its result card.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wähle ein Wort oder eine Wendung aus und verwende dann das Lesezeichen in der Ergebniskarte."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Selecciona una palabra o frase y usa el marcador de su ficha de resultado."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Sélectionnez un mot ou une expression, puis utilisez le signet de sa fiche de résultat."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語または語句を選択し、結果カードのブックマークを使って保存します。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어나 구문을 선택한 다음 결과 카드의 책갈피를 사용하세요."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Выделите слово или фразу, затем нажмите закладку в карточке результата."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "选择单词或短语，然后点击结果卡片中的书签。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "選取單字或片語，然後點按結果卡片中的書籤。"}}
+      }
+    },
+    "Show All Languages": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Alle Sprachen anzeigen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Mostrar todos los idiomas"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Afficher toutes les langues"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "すべての言語を表示"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "모든 언어 표시"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Показать все языки"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "显示所有语言"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "顯示所有語言"}}
+      }
+    },
+    "Show in Finder": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Im Finder anzeigen"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Mostrar en Finder"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Afficher dans le Finder"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "Finderに表示"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "Finder에서 보기"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Показать в Finder"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "在“访达”中显示"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "在 Finder 中顯示"}}
+      }
+    },
+    "System Dictionary": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Systemlexikon"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Diccionario del sistema"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Dictionnaire système"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "システム辞書"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "시스템 사전"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Системный словарь"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "系统词典"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "系統辭典"}}
+      }
+    },
+    "The damaged vocabulary file could not be preserved. Saving is blocked.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Die beschädigte Wortschatzdatei konnte nicht gesichert werden. Speichern ist blockiert."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No se pudo conservar el archivo de vocabulario dañado. El guardado está bloqueado."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Le fichier de vocabulaire endommagé n’a pas pu être conservé. L’enregistrement est bloqué."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "破損した単語帳ファイルを保存できませんでした。保存は無効になっています。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "손상된 단어장 파일을 보존할 수 없습니다. 저장이 차단되었습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Не удалось сохранить повреждённый файл словаря. Сохранение заблокировано."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法保留损坏的生词本文件。保存功能已停用。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法保留損毀的生詞本檔案。儲存功能已停用。"}}
+      }
+    },
+    "The damaged vocabulary library could not be preserved.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Der beschädigte Wortschatz konnte nicht gesichert werden."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No se pudo conservar la biblioteca de vocabulario dañada."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "La bibliothèque de vocabulaire endommagée n’a pas pu être conservée."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "破損した単語帳を保存できませんでした。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "손상된 단어장을 보존할 수 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Не удалось сохранить повреждённый словарь."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法保留损坏的生词本。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法保留損毀的生詞本。"}}
+      }
+    },
+    "The exported file could not be verified.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Die exportierte Datei konnte nicht überprüft werden."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No se pudo verificar el archivo exportado."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Impossible de vérifier le fichier exporté."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "書き出したファイルを検証できませんでした。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "내보낸 파일을 확인할 수 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Не удалось проверить экспортированный файл."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法验证导出的文件。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法驗證匯出的檔案。"}}
+      }
+    },
+    "The previous clipboard contents could not be restored.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Der vorherige Inhalt der Zwischenablage konnte nicht wiederhergestellt werden."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No se pudo restaurar el contenido anterior del portapapeles."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Impossible de restaurer le contenu précédent du presse-papiers."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "以前のクリップボードの内容を復元できませんでした。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "이전 클립보드 내용을 복원할 수 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Не удалось восстановить предыдущее содержимое буфера обмена."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法恢复先前的剪贴板内容。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法復原先前的剪貼簿內容。"}}
+      }
+    },
+    "The result could not be copied.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Das Ergebnis konnte nicht kopiert werden."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No se pudo copiar el resultado."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Impossible de copier le résultat."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "結果をコピーできませんでした。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "결과를 복사할 수 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Не удалось скопировать результат."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法拷贝结果。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法拷貝結果。"}}
+      }
+    },
+    "The vocabulary file cannot be read. It has not been changed.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Die Wortschatzdatei kann nicht gelesen werden. Sie wurde nicht geändert."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No se puede leer el archivo de vocabulario. No se ha modificado."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Le fichier de vocabulaire est illisible. Il n’a pas été modifié."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳ファイルを読み込めません。ファイルは変更されていません。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 파일을 읽을 수 없습니다. 파일은 변경되지 않았습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Не удаётся прочитать файл словаря. Файл не изменён."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法读取生词本文件。文件未被更改。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法讀取生詞本檔案。檔案未被更改。"}}
+      }
+    },
+    "The vocabulary library cannot be read.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Der Wortschatz kann nicht gelesen werden."}},
+        "es": {"stringUnit": {"state": "translated", "value": "No se puede leer la biblioteca de vocabulario."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "La bibliothèque de vocabulaire est illisible."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳を読み込めません。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장을 읽을 수 없습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Не удаётся прочитать словарь."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "无法读取生词本。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法讀取生詞本。"}}
+      }
+    },
+    "This cannot be undone. Preserved recovery backups are not deleted.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Dies kann nicht rückgängig gemacht werden. Gesicherte Wiederherstellungsdateien werden nicht gelöscht."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Esta acción no se puede deshacer. Las copias de recuperación conservadas no se eliminan."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Cette action est irréversible. Les sauvegardes de récupération conservées ne sont pas supprimées."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "この操作は取り消せません。保存された復旧用バックアップは削除されません。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "이 작업은 실행 취소할 수 없습니다. 보존된 복구 백업은 삭제되지 않습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Это действие нельзя отменить. Сохранённые резервные копии восстановления не удаляются."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "此操作无法撤销。已保留的恢复备份不会被删除。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "此操作無法還原。已保留的復原備份不會被刪除。"}}
+      }
+    },
+    "This removes the saved entry from this Mac.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Dadurch wird der gespeicherte Eintrag von diesem Mac entfernt."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Esto elimina la entrada guardada de este Mac."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "L’entrée enregistrée sera supprimée de ce Mac."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "保存した項目がこのMacから削除されます。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "저장된 항목이 이 Mac에서 제거됩니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Сохранённая запись будет удалена с этого Mac."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "这会从这台 Mac 移除已保存的条目。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "這會從這部 Mac 移除已儲存的項目。"}}
+      }
+    },
+    "This vocabulary file uses unsupported version %lld. It has not been changed.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Diese Wortschatzdatei verwendet die nicht unterstützte Version %lld. Sie wurde nicht geändert."}},
+        "es": {"stringUnit": {"state": "translated", "value": "Este archivo de vocabulario usa la versión no compatible %lld. No se ha modificado."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Ce fichier de vocabulaire utilise la version %lld, qui n’est pas prise en charge. Il n’a pas été modifié."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "この単語帳ファイルは未対応のバージョン%lldを使用しています。ファイルは変更されていません。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "이 단어장 파일은 지원되지 않는 버전 %lld을(를) 사용합니다. 파일은 변경되지 않았습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Файл словаря имеет неподдерживаемую версию %lld. Файл не изменён."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "此生词本文件使用不受支持的版本 %lld。文件未被更改。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "此生詞本檔案使用不支援的版本 %lld。檔案未被更改。"}}
+      }
+    },
+    "Unavailable": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Nicht verfügbar"}},
+        "es": {"stringUnit": {"state": "translated", "value": "No disponible"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Indisponible"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "利用できません"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "사용할 수 없음"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Недоступно"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "不可用"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "無法使用"}}
+      }
+    },
+    "Vocabulary": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wortschatz"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Vocabulario"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Vocabulaire"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Словарь"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "生词本"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "生詞本"}}
+      }
+    },
+    "Vocabulary Error": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wortschatzfehler"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Error de vocabulario"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Erreur de vocabulaire"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳エラー"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 오류"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Ошибка словаря"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "生词本错误"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "生詞本錯誤"}}
+      }
+    },
+    "Vocabulary Unavailable": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wortschatz nicht verfügbar"}},
+        "es": {"stringUnit": {"state": "translated", "value": "Vocabulario no disponible"}},
+        "fr": {"stringUnit": {"state": "translated", "value": "Vocabulaire indisponible"}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳を利用できません"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장을 사용할 수 없음"}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Словарь недоступен"}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "生词本不可用"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "生詞本無法使用"}}
+      }
+    },
+    "Vocabulary library version %lld is not supported.": {
+      "localizations": {
+        "de": {"stringUnit": {"state": "translated", "value": "Wortschatzversion %lld wird nicht unterstützt."}},
+        "es": {"stringUnit": {"state": "translated", "value": "La versión %lld de la biblioteca de vocabulario no es compatible."}},
+        "fr": {"stringUnit": {"state": "translated", "value": "La version %lld de la bibliothèque de vocabulaire n’est pas prise en charge."}},
+        "ja": {"stringUnit": {"state": "translated", "value": "単語帳のバージョン%lldには対応していません。"}},
+        "ko": {"stringUnit": {"state": "translated", "value": "단어장 버전 %lld은(는) 지원되지 않습니다."}},
+        "ru": {"stringUnit": {"state": "translated", "value": "Версия словаря %lld не поддерживается."}},
+        "zh-Hans": {"stringUnit": {"state": "translated", "value": "不支持生词本版本 %lld。"}},
+        "zh-Hant": {"stringUnit": {"state": "translated", "value": "不支援生詞本版本 %lld。"}}
+      }
+    },
     "“%@” isn't in the system dictionary.": {
       "localizations": {
         "de": {
