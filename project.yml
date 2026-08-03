@@ -13,6 +13,11 @@ options:
   generateEmptyDirectories: true
   developmentLanguage: en   # source strings are English; Localizable.xcstrings carries the other languages
 
+configs:
+  Debug: debug
+  Test: debug
+  Release: release
+
 packages:
   Sparkle:                                   # auto-update for non-App-Store distribution (M6)
     url: https://github.com/sparkle-project/Sparkle
@@ -22,10 +27,11 @@ settings:
   base:
     SWIFT_VERSION: "6.0"          # Swift 6 strict concurrency from the start (cheapest while code is tiny)
     DEVELOPMENT_TEAM: F4848G2W8P
-    MARKETING_VERSION: "1.1.0"
-    CURRENT_PROJECT_VERSION: "17"
+    MARKETING_VERSION: "1.1.1"
+    CURRENT_PROJECT_VERSION: "18"
     ARCHS: "$(ARCHS_STANDARD)"    # universal: Apple Silicon + Intel (FM falls back gracefully on x86_64)
-    ONLY_ACTIVE_ARCH[config=Debug]: "YES"   # debug builds stay native-only for speed
+    ONLY_ACTIVE_ARCH[config=Debug]: "YES"   # local debug builds stay native-only for speed
+    ONLY_ACTIVE_ARCH[config=Test]: "YES"    # XCTest host also stays native-only
     SWIFT_EMIT_LOC_STRINGS: "YES"
 
 schemes:
@@ -36,7 +42,7 @@ schemes:
     run:
       config: Debug
     test:
-      config: Debug
+      config: Test
       targets:
         - GlossPopTests
     archive:
@@ -75,6 +81,12 @@ targets:
         ENABLE_HARDENED_RUNTIME: "YES"
         PRODUCT_NAME: GlossPop
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      configs:
+        Debug:
+          PRODUCT_BUNDLE_IDENTIFIER: com.wanruncong.glosspop.debug
+        Test:
+          PRODUCT_BUNDLE_IDENTIFIER: com.wanruncong.glosspop.testhost
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) GLOSSPOP_TEST_HOST"
 
   GlossPopTests:
     type: bundle.unit-test
@@ -88,3 +100,6 @@ targets:
       base:
         GENERATE_INFOPLIST_FILE: "YES"
         PRODUCT_BUNDLE_IDENTIFIER: com.wanruncong.glosspop.tests
+      configs:
+        Test:
+          PRODUCT_BUNDLE_IDENTIFIER: com.wanruncong.glosspop.testhost.tests

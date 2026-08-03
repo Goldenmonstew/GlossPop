@@ -2,6 +2,27 @@ import XCTest
 @testable import GlossPop
 
 final class AppLaunchModeTests: XCTestCase {
+    func testRuntimeGuardKeepsXCTestHostIdle() {
+        XCTAssertEqual(
+            AppRuntimeGuard.lifecycleDisposition(isXCTestLoaded: true, isTestHostBuild: true),
+            .remainIdleForXCTest
+        )
+    }
+
+    func testRuntimeGuardTerminatesDetachedTestHost() {
+        XCTAssertEqual(
+            AppRuntimeGuard.lifecycleDisposition(isXCTestLoaded: false, isTestHostBuild: true),
+            .terminateDetachedTestHost
+        )
+    }
+
+    func testRuntimeGuardRunsNormalBuildOutsideXCTest() {
+        XCTAssertEqual(
+            AppRuntimeGuard.lifecycleDisposition(isXCTestLoaded: false, isTestHostBuild: false),
+            .run
+        )
+    }
+
     func testDemoFlagsSelectAnIsolatedLaunchMode() {
         XCTAssertTrue(
             AppLaunchMode(arguments: ["GlossPop", "--demo-card"]).isDemo
@@ -24,6 +45,12 @@ final class AppLaunchModeTests: XCTestCase {
         XCTAssertTrue(
             AppLaunchMode(arguments: ["GlossPop", "--demo-vocabulary-recovery"]).isDemo
         )
+        for demo in SettingsAssessmentDemo.allCases {
+            XCTAssertTrue(
+                AppLaunchMode(arguments: ["GlossPop", demo.rawValue]).isDemo,
+                "\(demo.rawValue) must stay isolated from production settings"
+            )
+        }
         XCTAssertFalse(
             AppLaunchMode(arguments: ["GlossPop"]).isDemo
         )

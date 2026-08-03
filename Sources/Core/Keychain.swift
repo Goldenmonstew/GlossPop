@@ -3,7 +3,27 @@ import Security
 
 // Minimal Keychain wrapper for the BYOK API key (PLAN §5.2). Generic password, app service.
 enum Keychain {
-    private static let service = "com.wanruncong.glosspop"
+    private static let productionService = "com.wanruncong.glosspop"
+    private static let unidentifiedService = "com.wanruncong.glosspop.unidentified"
+    private static var service: String {
+        serviceName(
+            bundleIdentifier: Bundle.main.bundleIdentifier,
+            isProductionIdentity: AppIdentity.isCurrentOfficialBuild
+        )
+    }
+
+    // Keep every build identity in its own Keychain namespace. In particular, an ad-hoc XCTest
+    // host must never trigger an ACL prompt for the Developer ID release app's API key.
+    static func serviceName(
+        bundleIdentifier: String?,
+        isProductionIdentity: Bool
+    ) -> String {
+        guard let bundleIdentifier, !bundleIdentifier.isEmpty else { return unidentifiedService }
+        if bundleIdentifier == productionService, !isProductionIdentity {
+            return "\(productionService).nonproduction"
+        }
+        return bundleIdentifier
+    }
 
     @discardableResult
     static func set(_ value: String, account: String) -> Bool {

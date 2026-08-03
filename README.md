@@ -51,21 +51,21 @@ Updates are delivered automatically via [Sparkle](https://sparkle-project.org) (
 ## Bring your own model (BYOK)
 
 <p align="center">
-  <img src="docs/settings.png" width="420" alt="GlossPop settings: provider, model, reasoning effort, dictionary modes — changes apply immediately">
+  <img src="docs/settings.png" width="420" alt="GlossPop settings: provider, model, reasoning effort and model compatibility assessment">
 </p>
 
 Settings ▸ *Translation model*:
 
 1. **Provider / Endpoint** — any OpenAI-compatible endpoint (OpenAI, DeepSeek, your relay, or `http://localhost:11434` for Ollama).
 2. **API key** — stored in your macOS **Keychain**, never anywhere else.
-3. **Model** — type it, or fetch the list from `/v1/models`; **Test connection** verifies it end-to-end.
-4. Changes apply immediately — the first test on a new cloud host doubles as your one-time consent.
+3. **Model** — type it, or fetch the list from `/v1/models`; **Check compatibility** uses GlossPop's built-in sample text and prompts to exercise the real streamed-translation, AI-dictionary and sentence-analysis paths, check output language, and report each stage's latency. Custom prompts are neither sent nor assessed.
+4. Changes apply immediately — the first check on a new cloud host sends only the disclosed built-in sample text and prompts, and doubles as your one-time consent for future selected text.
 
 When the endpoint is a cloud/relay host, the panel's footer is badged **“cloud”** so you always know your text left the machine; loopback (`localhost`) is badged **“on-device”**. The UI is localised into English, 简体中文, 繁體中文, 日本語, 한국어, Français, Deutsch, Español and Русский, following your system language.
 
 ## Privacy
 
-- **Zero clipboard by default**, and the word/phrase path can run fully offline (macOS system dictionary). Nothing is ever sent to a cloud host until you configure one and confirm it once via **Test connection**.
+- **Zero clipboard by default**, and the word/phrase path can run fully offline (macOS system dictionary). Nothing is ever sent to a cloud host until you configure one and confirm it once via **Check compatibility**; that check reads no selection, clipboard, history or vocabulary, sends only its disclosed built-in sample text and prompts, and never sends or assesses your custom prompts.
 - The optional Tier-2 “synthetic copy” fallback (for apps that don't expose selection, e.g. Safari/Electron) is **off by default**; when on, it restores your clipboard immediately.
 - By default, your selection isn't stored or logged. If you enable **Translation History**, selections and their available results are kept locally in plain text; explicitly saving a word or phrase also stores that selected term and its dictionary results in the local vocabulary.
 - Active vocabulary entries are kept locally in plain text and can be deleted individually, cleared together, or exported at any time. If GlossPop preserves a damaged vocabulary file during recovery, it shows the backup location so you can review or delete it in Finder.

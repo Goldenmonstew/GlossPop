@@ -5,6 +5,12 @@ import Foundation
 // BYOKSnapshot so the request + provenance stay consistent even if settings change mid-stream.
 struct OpenAICompatibleEngine: RefineEngine {
     let snapshot: BYOKSnapshot
+    let session: URLSession
+
+    init(snapshot: BYOKSnapshot, session: URLSession = .shared) {
+        self.snapshot = snapshot
+        self.session = session
+    }
 
     var label: String { snapshot.label }
     var provenance: String { snapshot.provenance }
@@ -12,12 +18,15 @@ struct OpenAICompatibleEngine: RefineEngine {
 
     func refine(source: String, draft: String, targetCode: String) -> AsyncThrowingStream<String, Error> {
         let snapshot = self.snapshot
+        let session = self.session
         // Cumulative snapshots → safe to drop intermediate frames if the UI can't keep up.
         return AsyncThrowingStream(String.self, bufferingPolicy: .bufferingNewest(1)) { continuation in
             let task = Task {
                 do {
                     guard let url = snapshot.chatURL else {
-                        throw RefineError.message(String(localized: "Invalid endpoint URL (needs http(s) and a host)"))
+                        throw RefineError.invalidEndpoint(
+                            String(localized: "Invalid endpoint URL (needs http(s) and a host)")
+                        )
                     }
                     var request = URLRequest(url: url)
                     request.httpMethod = "POST"
@@ -36,9 +45,9 @@ struct OpenAICompatibleEngine: RefineEngine {
                     if snapshot.reasoningEffort != "default" { body["reasoning_effort"] = snapshot.reasoningEffort }
                     request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-                    let (bytes, response) = try await URLSession.shared.bytes(for: request)
+                    let (bytes, response) = try await session.bytes(for: request)
                     if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-                        throw RefineError.message("HTTP \(http.statusCode) from \(snapshot.host)")
+                        throw RefineError.http(statusCode: http.statusCode, host: snapshot.host)
                     }
 
                     var accumulated = ""
@@ -62,5 +71,21 @@ struct OpenAICompatibleEngine: RefineEngine {
 
 enum RefineError: LocalizedError {
     case message(String)
-    var errorDescription: String? { if case .message(let m) = self { return m }; return nil }
+    case invalidEndpoint(String)
+    case http(statusCode: Int, host: String)
+    case malformedStructuredResponse
+    case emptyStructuredResult
+
+    var errorDescription: String? {
+        switch self {
+        case .message(let message), .invalidEndpoint(let message):
+            return message
+        case .http(let statusCode, let host):
+            return "HTTP \(statusCode) from \(host)"
+        case .malformedStructuredResponse:
+            return String(localized: "Couldn't parse the structured response")
+        case .emptyStructuredResult:
+            return String(localized: "Empty structured result")
+        }
+    }
 }

@@ -19,6 +19,9 @@ final class StructuredPromptTests: XCTestCase {
         let p = StructuredPrompt.user(kind: .sentence, source: "我们一起去公园散步。",
                                       firstLanguage: "en", secondLanguage: "zh-Hans")
         XCTAssertTrue(p.contains("into English"))
+        XCTAssertTrue(p.contains("\"refinedTranslation\" in English"))
+        XCTAssertTrue(p.contains("\"refinedTranslation\":\"(in English)\""))
+        XCTAssertFalse(p.contains("\"refinedTranslation\":\"(in Simplified Chinese)\""))
         XCTAssertFalse(p.contains("zh-Hans"))   // names, not BCP-47 codes
         // Every analysis field — including notes — is requested in the native language BY NAME, and notes
         // carry the same per-field "(in …)" marker the grammar points use: a bare [] template let notes

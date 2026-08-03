@@ -24,12 +24,12 @@ build: gen
 	  -destination '$(DEST)' -configuration Debug \
 	  -derivedDataPath build $(SIGNING) -quiet
 
-# Tests stay unsigned (they never touch TCC) and use their own derived data: a hardened-runtime
-# Developer ID host from `make build` would block XCTest bundle injection (library validation),
-# and an incremental build does not strip the previous signature.
+# Tests use a dedicated Test configuration and bundle identity. The host stays unsigned so a
+# hardened-runtime Developer ID build cannot block XCTest bundle injection (library validation),
+# and the test host cannot inherit production TCC, Keychain or login-item identity.
 test: gen
 	xcodebuild test -project $(PROJECT) -scheme $(SCHEME) \
-	  -destination '$(DEST)' -derivedDataPath build-test \
+	  -destination '$(DEST)' -configuration Test -derivedDataPath build-test \
 	  CODE_SIGNING_ALLOWED=NO -quiet
 
 run: build

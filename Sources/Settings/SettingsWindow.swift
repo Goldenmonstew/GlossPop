@@ -1,6 +1,157 @@
 import AppKit
 import SwiftUI
 
+enum SettingsAssessmentDemo: String, CaseIterable {
+    case running = "--demo-settings-assessment-running"
+    case compatible = "--demo-settings-assessment-compatible"
+    case translationOnly = "--demo-settings-assessment-translation-only"
+    case incompatible = "--demo-settings-assessment-incompatible"
+    case inconclusive = "--demo-settings-assessment-inconclusive"
+
+    init?(arguments: [String]) {
+        guard let match = Self.allCases.first(where: { arguments.contains($0.rawValue) }) else {
+            return nil
+        }
+        self = match
+    }
+
+    var progress: ModelCapabilityStage? {
+        self == .running ? .sentence : nil
+    }
+
+    var report: ModelCapabilityReport? {
+        let passed = ModelCapabilityCheck(latency: .milliseconds(1_200), outcome: .passed)
+        switch self {
+        case .running:
+            return nil
+        case .compatible:
+            return ModelCapabilityReport(
+                translation: passed,
+                dictionary: ModelCapabilityCheck(latency: .milliseconds(2_400), outcome: .passed),
+                sentence: ModelCapabilityCheck(latency: .milliseconds(3_100), outcome: .passed),
+                totalLatency: .milliseconds(6_700)
+            )
+        case .translationOnly:
+            return ModelCapabilityReport(
+                translation: passed,
+                dictionary: ModelCapabilityCheck(
+                    latency: .milliseconds(2_100),
+                    outcome: .failed(.invalidDictionary)
+                ),
+                sentence: ModelCapabilityCheck(
+                    latency: .milliseconds(2_800),
+                    outcome: .failed(.invalidSentence)
+                ),
+                totalLatency: .milliseconds(6_100)
+            )
+        case .incompatible:
+            return ModelCapabilityReport(
+                translation: ModelCapabilityCheck(
+                    latency: .milliseconds(900),
+                    outcome: .failed(
+                        .request(message: "HTTP 400 from api.example.com", inconclusive: false)
+                    )
+                ),
+                dictionary: .skipped,
+                sentence: .skipped,
+                totalLatency: .milliseconds(900)
+            )
+        case .inconclusive:
+            return ModelCapabilityReport(
+                translation: ModelCapabilityCheck(
+                    latency: .milliseconds(1_700),
+                    outcome: .failed(
+                        .request(message: "HTTP 429 from api.example.com", inconclusive: true)
+                    )
+                ),
+                dictionary: .skipped,
+                sentence: .skipped,
+                totalLatency: .milliseconds(1_700)
+            )
+        }
+    }
+}
+
+@MainActor
+private struct SettingsSeed {
+    let isDemo: Bool
+    let provider: String
+    let baseURL: String
+    let model: String
+    let apiKey: String
+    let apiPath: String
+    let reasoningEffort: String
+    let dictMode: DictionaryMode
+    let sentenceEnabled: Bool
+    let customPromptEnabled: Bool
+    let customSystemPrompt: String
+    let customUserPrompt: String
+    let syntheticCopy: Bool
+    let firstLang: String
+    let secondLang: String
+    let launchAtLogin: Bool
+    let historyEnabled: Bool
+    let compactPanel: Bool
+    let hotKeyDisplay: String
+    let assessmentReport: ModelCapabilityReport?
+    let assessmentProgress: ModelCapabilityStage?
+
+    static func live() -> SettingsSeed {
+        SettingsSeed(
+            isDemo: false,
+            provider: ProviderCatalog.match(
+                base: BYOKConfig.baseURL,
+                path: BYOKConfig.apiPath
+            )?.id ?? "custom",
+            baseURL: BYOKConfig.baseURL,
+            model: BYOKConfig.model,
+            apiKey: BYOKConfig.apiKey,
+            apiPath: BYOKConfig.apiPath,
+            reasoningEffort: BYOKConfig.reasoningEffort,
+            dictMode: DictionaryConfig.mode,
+            sentenceEnabled: BYOKConfig.sentenceAnalysisEnabled,
+            customPromptEnabled: BYOKConfig.customPromptEnabled,
+            customSystemPrompt: BYOKConfig.customSystemPrompt,
+            customUserPrompt: BYOKConfig.customUserPrompt,
+            syntheticCopy: CaptureConfig.syntheticCopyEnabled,
+            firstLang: TargetLanguage.firstLanguage,
+            secondLang: TargetLanguage.secondLanguage,
+            launchAtLogin: LoginItem.isActive,
+            historyEnabled: HistoryStore.isEnabled,
+            compactPanel: PanelConfig.compact,
+            hotKeyDisplay: HotKeyConfig.displayString,
+            assessmentReport: nil,
+            assessmentProgress: nil
+        )
+    }
+
+    static func demo(_ demo: SettingsAssessmentDemo) -> SettingsSeed {
+        SettingsSeed(
+            isDemo: true,
+            provider: "custom",
+            baseURL: "https://api.example.com",
+            model: "example-translation-model",
+            apiKey: "demo-key-not-secret",
+            apiPath: "/v1/chat/completions",
+            reasoningEffort: "low",
+            dictMode: .offlinePlusAI,
+            sentenceEnabled: true,
+            customPromptEnabled: false,
+            customSystemPrompt: "",
+            customUserPrompt: "",
+            syntheticCopy: false,
+            firstLang: "zh-Hans",
+            secondLang: "en",
+            launchAtLogin: true,
+            historyEnabled: false,
+            compactPanel: true,
+            hotKeyDisplay: "⌃⌘T",
+            assessmentReport: demo.report,
+            assessmentProgress: demo.progress
+        )
+    }
+}
+
 // Minimal Settings window for BYOK config (PLAN §4). A user-invoked window MAY activate the app
 // (unlike the translate panel). Text entry lives here, never in the non-activating panel.
 @MainActor
@@ -8,7 +159,8 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
     private var host: NSHostingController<SettingsView>?
 
-    func show() {
+    func show(demo: SettingsAssessmentDemo? = nil) {
+        let seed = demo.map(SettingsSeed.demo) ?? SettingsSeed.live()
         // Become a regular app while Settings is open so the window reliably comes to the front
         // (an .accessory app can't bring a window forward dependably). The app returns to accessory
         // only after every user window has closed.
@@ -18,7 +170,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
             NSApp.setActivationPolicy(.regular)
         }
         if window == nil {
-            let h = NSHostingController(rootView: SettingsView())
+            let h = NSHostingController(rootView: SettingsView(seed: seed))
             let w = NSWindow(contentViewController: h)
             w.title = String(localized: "GlossPop Settings")
             w.styleMask = [.titled, .closable, .miniaturizable]   // System Settings allows ⌘M too
@@ -28,8 +180,10 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
             // Frame restore happens HERE, once, at creation — calling setFrameUsingName again inside
             // show() left the window ordered OUT on relaunch (empirically reproducible). Centre on the
             // cursor screen only when no frame has ever been saved (first launch).
-            w.setFrameAutosaveName("GlossPopSettings")
-            if w.setFrameUsingName("GlossPopSettings") == false {
+            if demo == nil {
+                w.setFrameAutosaveName("GlossPopSettings")
+            }
+            if demo != nil || w.setFrameUsingName("GlossPopSettings") == false {
                 let screen = NSScreen.screens.first { NSMouseInRect(NSEvent.mouseLocation, $0.frame, false) } ?? NSScreen.screens.first
                 if let screen {
                     let vf = screen.visibleFrame
@@ -44,7 +198,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
             // view type keeps SwiftUI @State alive (structural identity), so the old "reload" was a no-op
             // — recreate the hosting controller to genuinely reset the @State.
             // Already-visible window: just bring it forward — do NOT wipe unsaved edits.
-            let h = NSHostingController(rootView: SettingsView())
+            let h = NSHostingController(rootView: SettingsView(seed: seed))
             window?.contentViewController = h
             host = h
         }
@@ -63,36 +217,77 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
 
 private struct SettingsView: View {
-    @State private var provider = ProviderCatalog.match(base: BYOKConfig.baseURL, path: BYOKConfig.apiPath)?.id ?? "custom"
-    @State private var baseURL = BYOKConfig.baseURL
-    @State private var model = BYOKConfig.model
-    @State private var apiKey = BYOKConfig.apiKey
-    @State private var models: [String] = []
-    @State private var busy = false
+    private let isDemo: Bool
+    @State private var provider: String
+    @State private var baseURL: String
+    @State private var model: String
+    @State private var apiKey: String
+    @State private var models: [String]
+    @State private var fetchingModels: Bool
+    @State private var assessing: Bool
     @State private var status: String?
-    @State private var statusOK = false
-    @State private var availableDicts: [String] = []   // macOS dictionaries available to enable in Dictionary.app
+    @State private var statusOK: Bool
+    @State private var availableDicts: [String]   // macOS dictionaries available to enable in Dictionary.app
     @State private var inflight: Task<Void, Never>?
-    @State private var apiPath = BYOKConfig.apiPath
-    @State private var reasoningEffort = BYOKConfig.reasoningEffort
-    @State private var dictMode = DictionaryConfig.mode
-    @State private var sentenceEnabled = BYOKConfig.sentenceAnalysisEnabled
-    @State private var customPromptEnabled = BYOKConfig.customPromptEnabled
-    @State private var customSystemPrompt = BYOKConfig.customSystemPrompt
-    @State private var customUserPrompt = BYOKConfig.customUserPrompt
-    @State private var syntheticCopy = CaptureConfig.syntheticCopyEnabled
-    @State private var firstLang = TargetLanguage.firstLanguage
-    @State private var secondLang = TargetLanguage.secondLanguage
-    @State private var launchAtLogin = LoginItem.isActive
-    @State private var historyEnabled = HistoryStore.isEnabled
-    @State private var compactPanel = PanelConfig.compact
-    @State private var hotKeyDisplay = HotKeyConfig.displayString
-    @State private var recording = false
+    @State private var apiPath: String
+    @State private var reasoningEffort: String
+    @State private var dictMode: DictionaryMode
+    @State private var sentenceEnabled: Bool
+    @State private var customPromptEnabled: Bool
+    @State private var customSystemPrompt: String
+    @State private var customUserPrompt: String
+    @State private var syntheticCopy: Bool
+    @State private var firstLang: String
+    @State private var secondLang: String
+    @State private var launchAtLogin: Bool
+    @State private var historyEnabled: Bool
+    @State private var compactPanel: Bool
+    @State private var hotKeyDisplay: String
+    @State private var recording: Bool
     @State private var recordMonitor: Any?
     @State private var hotKeyStatus: String?
     @State private var loginStatus: String?
+    @State private var assessmentReport: ModelCapabilityReport?
+    @State private var assessmentProgress: ModelCapabilityStage?
+    @State private var activeAssessmentKey: String?
     private enum Field: Hashable { case base, path, key, model, sysPrompt, userPrompt }
     @FocusState private var focusedField: Field?
+
+    init(seed: SettingsSeed) {
+        isDemo = seed.isDemo
+        _provider = State(initialValue: seed.provider)
+        _baseURL = State(initialValue: seed.baseURL)
+        _model = State(initialValue: seed.model)
+        _apiKey = State(initialValue: seed.apiKey)
+        _models = State(initialValue: [])
+        _fetchingModels = State(initialValue: false)
+        _assessing = State(initialValue: seed.assessmentProgress != nil)
+        _status = State(initialValue: nil)
+        _statusOK = State(initialValue: false)
+        _availableDicts = State(initialValue: [])
+        _inflight = State(initialValue: nil)
+        _apiPath = State(initialValue: seed.apiPath)
+        _reasoningEffort = State(initialValue: seed.reasoningEffort)
+        _dictMode = State(initialValue: seed.dictMode)
+        _sentenceEnabled = State(initialValue: seed.sentenceEnabled)
+        _customPromptEnabled = State(initialValue: seed.customPromptEnabled)
+        _customSystemPrompt = State(initialValue: seed.customSystemPrompt)
+        _customUserPrompt = State(initialValue: seed.customUserPrompt)
+        _syntheticCopy = State(initialValue: seed.syntheticCopy)
+        _firstLang = State(initialValue: seed.firstLang)
+        _secondLang = State(initialValue: seed.secondLang)
+        _launchAtLogin = State(initialValue: seed.launchAtLogin)
+        _historyEnabled = State(initialValue: seed.historyEnabled)
+        _compactPanel = State(initialValue: seed.compactPanel)
+        _hotKeyDisplay = State(initialValue: seed.hotKeyDisplay)
+        _recording = State(initialValue: false)
+        _recordMonitor = State(initialValue: nil)
+        _hotKeyStatus = State(initialValue: nil)
+        _loginStatus = State(initialValue: nil)
+        _assessmentReport = State(initialValue: seed.assessmentReport)
+        _assessmentProgress = State(initialValue: seed.assessmentProgress)
+        _activeAssessmentKey = State(initialValue: nil)
+    }
 
     private var selectedPreset: ProviderPreset? { ProviderCatalog.preset(id: provider) }
     private var isLocalProvider: Bool { selectedPreset?.isLocal ?? BYOKConfig.isLocal(baseURL) }
@@ -104,60 +299,116 @@ private struct SettingsView: View {
         return p.isEmpty ? "/v1/chat/completions" : p
     }
     private var version: String { (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "" }
+    private var isBusy: Bool { fetchingModels || assessing }
 
     private var endpointKey: String { "\(baseURL)\u{1}\(apiPath)\u{1}\(apiKey)" }
+    private var assessmentKey: String {
+        [
+            baseURL,
+            apiPath,
+            apiKey,
+            model,
+            reasoningEffort,
+            firstLang,
+            secondLang,
+        ].joined(separator: "\u{1}")
+    }
 
     var body: some View {
-        Form {
-            headerSection
-            generalSection
-            modelSection
-            systemDictSection
-            outputSection
-            advancedSection
-            captureSection
-        }
-        .formStyle(.grouped)
-        .frame(width: 480, height: 760)   // pin so the flexible-height Form doesn't collapse the window
-        .onAppear {
-            launchAtLogin = LoginItem.isActive   // re-derive on (re)open so requiresApproval isn't lost
-            loginStatus = LoginItem.requiresApproval ? String(localized: "Approve it in System Settings ▸ General ▸ Login Items") : nil
-            if availableDicts.isEmpty { availableDicts = SystemDictionary.availableNames() }
-        }
-        .onDisappear { stopRecording(); inflight?.cancel(); commitText() } // flush pending edits on close
-        .onChange(of: provider) {
-            status = nil; models = []
-            if let preset = selectedPreset {   // a known provider: reset endpoint + model to its defaults
-                baseURL = preset.baseURL
-                apiPath = preset.apiPath
-                if !preset.defaultModel.isEmpty { model = preset.defaultModel }
+        ScrollViewReader { proxy in
+            Form {
+                headerSection
+                generalSection
+                modelSection
+                systemDictSection
+                outputSection
+                advancedSection
+                captureSection
             }
-            commitText()
-        }
-        .onChange(of: endpointKey) { models = []; status = nil } // endpoint/key changed → stale model list
-        // INSTANT APPLY (user decision — no 保存 button): pickers/toggles persist the moment they change;
-        // text fields persist on focus loss / Return / window close (commitText).
-        .onChange(of: focusedField) { commitText() }
-        .onChange(of: reasoningEffort) { BYOKConfig.reasoningEffort = reasoningEffort }
-        .onChange(of: dictMode) { DictionaryConfig.mode = dictMode }
-        .onChange(of: sentenceEnabled) { BYOKConfig.sentenceAnalysisEnabled = sentenceEnabled }
-        .onChange(of: customPromptEnabled) { BYOKConfig.customPromptEnabled = customPromptEnabled }
-        .onChange(of: syntheticCopy) { CaptureConfig.syntheticCopyEnabled = syntheticCopy }
-        .onChange(of: firstLang) { applyLanguages() }
-        .onChange(of: secondLang) { applyLanguages() }
-        .onChange(of: launchAtLogin) {
-            if launchAtLogin == LoginItem.isActive {   // already in sync (our own programmatic write) → no loop
+            .formStyle(.grouped)
+            .frame(width: 480, height: 760)   // pin so the flexible-height Form doesn't collapse the window
+            .allowsHitTesting(!isDemo)
+            .onAppear {
+                if isDemo {
+                    DispatchQueue.main.async {
+                        proxy.scrollTo(
+                            "model-assessment",
+                            anchor: UnitPoint(x: 0.5, y: 0.38)
+                        )
+                    }
+                    return
+                }
+                launchAtLogin = LoginItem.isActive   // re-derive on (re)open so requiresApproval isn't lost
                 loginStatus = LoginItem.requiresApproval ? String(localized: "Approve it in System Settings ▸ General ▸ Login Items") : nil
-                return
+                if availableDicts.isEmpty { availableDicts = SystemDictionary.availableNames() }
             }
-            _ = LoginItem.setEnabled(launchAtLogin)
-            launchAtLogin = LoginItem.isActive   // keep ON for .requiresApproval too (no bounce)
-            loginStatus = LoginItem.requiresApproval ? String(localized: "Approve it in System Settings ▸ General ▸ Login Items") : nil
-        }
-        .onChange(of: historyEnabled) { HistoryStore.isEnabled = historyEnabled }
-        .onChange(of: compactPanel) {   // immediate, like the toggles above; re-render an open panel too
-            PanelConfig.compact = compactPanel
-            (NSApp.delegate as? AppDelegate)?.applyPanelCompact()
+            .onDisappear {
+                guard !isDemo else { return }
+                stopRecording()
+                inflight?.cancel()
+                commitText()
+            } // flush pending edits on close
+            .onChange(of: provider) {
+                guard !isDemo else { return }
+                status = nil; models = []
+                assessmentReport = nil
+                if let preset = selectedPreset {   // a known provider: reset endpoint + model to its defaults
+                    baseURL = preset.baseURL
+                    apiPath = preset.apiPath
+                    if !preset.defaultModel.isEmpty { model = preset.defaultModel }
+                }
+                commitText()
+            }
+            .onChange(of: endpointKey) {
+                guard !isDemo else { return }
+                models = []
+                status = nil
+            } // endpoint/key changed → stale model list
+            .onChange(of: assessmentKey) {
+                guard !isDemo else { return }
+                assessmentReport = nil
+                guard let activeAssessmentKey, activeAssessmentKey != assessmentKey else { return }
+                inflight?.cancel()
+                self.activeAssessmentKey = nil
+                assessmentProgress = nil
+                assessing = false
+            }
+            // INSTANT APPLY (user decision — no 保存 button): pickers/toggles persist the moment they change;
+            // text fields persist on focus loss / Return / window close (commitText).
+            .onChange(of: focusedField) { if !isDemo { commitText() } }
+            .onChange(of: reasoningEffort) {
+                if !isDemo { BYOKConfig.reasoningEffort = reasoningEffort }
+            }
+            .onChange(of: dictMode) { if !isDemo { DictionaryConfig.mode = dictMode } }
+            .onChange(of: sentenceEnabled) {
+                if !isDemo { BYOKConfig.sentenceAnalysisEnabled = sentenceEnabled }
+            }
+            .onChange(of: customPromptEnabled) {
+                if !isDemo { BYOKConfig.customPromptEnabled = customPromptEnabled }
+            }
+            .onChange(of: syntheticCopy) {
+                if !isDemo { CaptureConfig.syntheticCopyEnabled = syntheticCopy }
+            }
+            .onChange(of: firstLang) { if !isDemo { applyLanguages() } }
+            .onChange(of: secondLang) { if !isDemo { applyLanguages() } }
+            .onChange(of: launchAtLogin) {
+                guard !isDemo else { return }
+                if launchAtLogin == LoginItem.isActive {   // already in sync (our own programmatic write) → no loop
+                    loginStatus = LoginItem.requiresApproval ? String(localized: "Approve it in System Settings ▸ General ▸ Login Items") : nil
+                    return
+                }
+                _ = LoginItem.setEnabled(launchAtLogin)
+                launchAtLogin = LoginItem.isActive   // keep ON for .requiresApproval too (no bounce)
+                loginStatus = LoginItem.requiresApproval ? String(localized: "Approve it in System Settings ▸ General ▸ Login Items") : nil
+            }
+            .onChange(of: historyEnabled) {
+                if !isDemo { HistoryStore.isEnabled = historyEnabled }
+            }
+            .onChange(of: compactPanel) {   // immediate, like the toggles above; re-render an open panel too
+                guard !isDemo else { return }
+                PanelConfig.compact = compactPanel
+                (NSApp.delegate as? AppDelegate)?.applyPanelCompact()
+            }
         }
     }
 
@@ -235,8 +486,8 @@ private struct SettingsView: View {
                 HStack(spacing: 6) {
                     TextField("", text: $model, prompt: Text("e.g. gpt-4o-mini")).multilineTextAlignment(.trailing).focused($focusedField, equals: .model).onSubmit { commitText() }
                     Menu {
-                        Button(busy ? String(localized: "Fetching…") : String(localized: "Fetch model list")) { fetchModels() }
-                            .disabled(trimmedBase.isEmpty || busy)
+                        Button(fetchingModels ? String(localized: "Fetching…") : String(localized: "Fetch model list")) { fetchModels() }
+                            .disabled(trimmedBase.isEmpty || isBusy)
                         if !models.isEmpty {
                             Divider()
                             ForEach(models, id: \.self) { m in Button(m) { model = m } }
@@ -252,20 +503,31 @@ private struct SettingsView: View {
                 Text("Medium").tag("medium")
                 Text("High (more accurate)").tag("high")
             }
-            HStack(spacing: 8) {
-                Button("Test connection") { testConnection() }
-                    .disabled(trimmedBase.isEmpty || trimmedModel.isEmpty || busy)
-                if busy { ProgressView().controlSize(.mini) }
-                if let status {
-                    Label(status, systemImage: statusOK ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                        .font(.caption).foregroundStyle(statusOK ? .green : .red).lineLimit(2)
-                }
-                Spacer()
+            ModelAssessmentControl(
+                assessing: assessing,
+                progress: assessmentProgress,
+                report: assessmentReport,
+                disabled: trimmedBase.isEmpty || trimmedModel.isEmpty || isBusy,
+                action: checkCompatibility
+            )
+            .id("model-assessment")
+            if let status {
+                Label(
+                    status,
+                    systemImage: statusOK ? "checkmark.circle.fill" : "exclamationmark.triangle.fill"
+                )
+                .font(.caption)
+                .foregroundStyle(statusOK ? .green : .red)
+                .fixedSize(horizontal: false, vertical: true)
             }
             if let host = pendingConsentHost {
-                Text("First time with this cloud service: clicking “Test connection” confirms sending selected text to \(host) (one-time) and enables translation.")
+                Text("First time with this cloud service: “Check compatibility” sends built-in test text to \(host) and confirms that future selections may be sent there for translation.")
                     .font(.caption).foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            Text("The check uses built-in sample text and built-in prompts; custom prompts are not sent or evaluated. It tests streamed translation, the AI dictionary and sentence analysis, and never reads your selection, clipboard, history or vocabulary.")
+                .font(.caption).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
             Text(isLocalProvider ? String(localized: "Local model — your text never leaves this Mac.")
                                   : String(localized: "Changes apply immediately. Translation sends your selected text to this service; the popup footer shows where it went. Reasoning effort only affects models that support it (e.g. gpt-5.x) — lower is faster."))
                 .font(.caption).foregroundStyle(.secondary)
@@ -301,6 +563,7 @@ private struct SettingsView: View {
                 }
                 LabeledContent("Manage system dictionaries") {
                     Button("Open Dictionary.app") {
+                        guard !isDemo else { return }
                         NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Dictionary.app"))
                     }
                 }
@@ -341,6 +604,7 @@ private struct SettingsView: View {
     }
 
     private func startRecording() {
+        guard !isDemo else { return }
         recording = true; hotKeyStatus = nil
         (NSApp.delegate as? AppDelegate)?.suspendHotKey()   // so the bound chord can be re-recorded
         recordMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
@@ -370,8 +634,9 @@ private struct SettingsView: View {
     }
 
     /// A cloud host the user has typed but never confirmed — translation stays DISABLED for it until the
-    /// one-time confirmation, which is the 测试连接 click itself (user decision: no modal, just this hint).
+    /// one-time confirmation, which is the compatibility-check click itself (no modal, just this hint).
     private var pendingConsentHost: String? {
+        guard !isDemo else { return nil }
         guard !trimmedModel.isEmpty, let u = BYOKConfig.url(trimmedBase), !BYOKConfig.isLocal(trimmedBase),
               let host = u.host else { return nil }
         return BYOKConfig.consentedHost == host ? nil : host
@@ -379,11 +644,17 @@ private struct SettingsView: View {
 
     /// Persist the text-field config (instant-apply: runs on focus loss / Return / provider switch / close).
     /// Folds the endpoint exactly like test/fetch, transactional on the Keychain write.
-    private func commitText() {
+    @discardableResult
+    private func commitText() -> Bool {
+        guard !isDemo else { return false }
         let folded = BYOKConfig.fold(base: trimmedBase, path: trimmedPath)
         baseURL = folded.base; apiPath = folded.path   // reflect the normalized split back into the fields
         if BYOKConfig.apiKey != trimmedKey {
-            guard BYOKConfig.setAPIKey(trimmedKey) else { status = String(localized: "Keychain write failed"); statusOK = false; return }
+            guard BYOKConfig.setAPIKey(trimmedKey) else {
+                status = String(localized: "Keychain write failed")
+                statusOK = false
+                return false
+            }
         }
         BYOKConfig.baseURL = folded.base
         BYOKConfig.apiPath = folded.path
@@ -391,6 +662,7 @@ private struct SettingsView: View {
         BYOKConfig.customSystemPrompt = customSystemPrompt
         BYOKConfig.customUserPrompt = customUserPrompt
         refreshEnabled(foldedBase: folded.base)
+        return true
     }
 
     /// Active = valid endpoint + model + (local OR consented cloud host). An un-consented cloud host stays
@@ -411,12 +683,12 @@ private struct SettingsView: View {
     }
 
     private func fetchModels() {
-        guard !busy else { return }
+        guard !isDemo, !isBusy else { return }
         let base = trimmedBase, key = trimmedKey, path = trimmedPath
         let folded = BYOKConfig.fold(base: base, path: path)   // hit the SAME endpoint save() will persist
-        busy = true; status = nil
+        fetchingModels = true; status = nil
         inflight = Task {
-            defer { busy = false }
+            defer { fetchingModels = false }
             do {
                 let result = try await BYOKClient.models(baseURL: folded.base, apiPath: folded.path, apiKey: key)
                 guard base == trimmedBase, key == trimmedKey, path == trimmedPath else { return } // config changed mid-flight
@@ -430,28 +702,225 @@ private struct SettingsView: View {
         }
     }
 
-    private func testConnection() {
-        guard !busy else { return }
-        commitText()   // persist what's typed before probing — the tested endpoint IS the live one
-        // One-time consent: clicking test knowingly sends text to this host — that click is the confirmation.
+    private func checkCompatibility() {
+        guard !isDemo, !isBusy, commitText() else { return }
+        // One-time consent: the check sends only built-in fixtures now and knowingly enables future
+        // translations to this host. A persisted snapshot below is the exact configuration being assessed.
         if let u = BYOKConfig.url(trimmedBase), !BYOKConfig.isLocal(trimmedBase), let host = u.host,
            BYOKConfig.consentedHost != host {
             BYOKConfig.consentedHost = host
             refreshEnabled(foldedBase: trimmedBase)
         }
-        let base = trimmedBase, key = trimmedKey, mdl = trimmedModel, path = trimmedPath
-        let folded = BYOKConfig.fold(base: base, path: path)
-        busy = true; status = nil
+        guard let snapshot = BYOKConfig.snapshot() else {
+            status = String(localized: "Invalid endpoint URL")
+            statusOK = false
+            return
+        }
+        let key = assessmentKey
+        let first = firstLang
+        let second = secondLang
+        let assessor = ModelCapabilityAssessor(snapshot: snapshot)
+        assessing = true
+        status = nil
+        assessmentReport = nil
+        assessmentProgress = .translation
+        activeAssessmentKey = key
         inflight = Task {
-            defer { busy = false }
+            defer {
+                if activeAssessmentKey == key {
+                    assessing = false
+                    assessmentProgress = nil
+                    activeAssessmentKey = nil
+                }
+            }
             do {
-                try await BYOKClient.testChat(baseURL: folded.base, apiPath: folded.path, apiKey: key, model: mdl, reasoningEffort: reasoningEffort)
-                guard base == trimmedBase, key == trimmedKey, mdl == trimmedModel, path == trimmedPath else { return }
-                status = String(localized: "Connected ✓ configuration is live"); statusOK = true
+                let report = try await assessor.assess(
+                    firstLanguage: first,
+                    secondLanguage: second
+                ) { stage in
+                    guard activeAssessmentKey == key, assessmentKey == key else { return }
+                    assessmentProgress = stage
+                }
+                guard activeAssessmentKey == key, assessmentKey == key else { return }
+                assessmentReport = report
+            } catch is CancellationError {
+                return
             } catch {
-                guard base == trimmedBase, key == trimmedKey, mdl == trimmedModel, path == trimmedPath else { return }
-                status = String(localized: "Connection failed: \(error.localizedDescription)"); statusOK = false
+                guard activeAssessmentKey == key, assessmentKey == key else { return }
+                status = String(localized: "Couldn't complete the compatibility check: \(error.localizedDescription)")
+                statusOK = false
             }
         }
+    }
+}
+
+private struct ModelAssessmentControl: View {
+    let assessing: Bool
+    let progress: ModelCapabilityStage?
+    let report: ModelCapabilityReport?
+    let disabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(spacing: 8) {
+                Button("Check compatibility", action: action)
+                    .disabled(disabled)
+                if assessing {
+                    ProgressView().controlSize(.mini)
+                    if let progress {
+                        Text(progressTitle(progress))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Spacer()
+            }
+            if let report {
+                let presentation = AssessmentPresentation(report: report)
+                Label {
+                    Text(presentation.title)
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(presentation.colour)
+                } icon: {
+                    Image(systemName: presentation.systemImage)
+                        .foregroundStyle(presentation.colour)
+                }
+                .accessibilityElement(children: .combine)
+                VStack(alignment: .leading, spacing: 5) {
+                    assessmentRow(
+                        String(localized: "Streaming translation"),
+                        check: report.translation,
+                        failureColour: report.level == .incompatible ? .red : .orange
+                    )
+                    assessmentRow(
+                        String(localized: "AI dictionary"),
+                        check: report.dictionary,
+                        failureColour: .orange
+                    )
+                    assessmentRow(
+                        String(localized: "Sentence analysis"),
+                        check: report.sentence,
+                        failureColour: .orange
+                    )
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func assessmentRow(
+        _ title: String,
+        check: ModelCapabilityCheck,
+        failureColour: Color
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 6) {
+                switch check.outcome {
+                case .passed:
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                case .failed:
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(failureColour)
+                case .skipped:
+                    Image(systemName: "minus.circle").foregroundStyle(.secondary)
+                }
+                Text(title)
+                Spacer(minLength: 8)
+                switch check.outcome {
+                case .passed, .failed:
+                    Text(AssessmentPresentation.duration(check.latency))
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                case .skipped:
+                    Text("Not run").foregroundStyle(.secondary)
+                }
+            }
+            if case .failed(let issue) = check.outcome {
+                Text(AssessmentPresentation.issue(issue))
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, 22)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .font(.caption)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func progressTitle(_ stage: ModelCapabilityStage) -> String {
+        switch stage {
+        case .translation:
+            return String(localized: "Testing translation…")
+        case .dictionary:
+            return String(localized: "Testing the AI dictionary…")
+        case .sentence:
+            return String(localized: "Testing sentence analysis…")
+        }
+    }
+}
+
+@MainActor
+private struct AssessmentPresentation {
+    let title: String
+    let systemImage: String
+    let colour: Color
+
+    init(report: ModelCapabilityReport) {
+        switch report.level {
+        case .full:
+            title = String(localized: "Fully compatible")
+            systemImage = "checkmark.circle.fill"
+            colour = .green
+        case .translationOnly:
+            title = String(localized: "Translation only")
+            systemImage = "exclamationmark.triangle.fill"
+            colour = .orange
+        case .incompatible:
+            title = String(localized: "Not compatible")
+            systemImage = "xmark.circle.fill"
+            colour = .red
+        case .inconclusive:
+            title = String(localized: "Couldn't assess")
+            systemImage = "questionmark.circle.fill"
+            colour = .orange
+        }
+    }
+
+    static func issue(_ issue: ModelCapabilityIssue) -> String {
+        switch issue {
+        case .request(let message, _):
+            return message
+        case .emptyTranslation:
+            return String(localized: "The model returned no streamed translation.")
+        case .invalidDictionary:
+            return String(localized: "The AI dictionary result was incomplete.")
+        case .invalidSentence:
+            return String(localized: "The sentence analysis result was incomplete.")
+        case .wrongLanguage(let expectedCode, _):
+            return String(
+                localized: "The result was not written in \(TargetLanguage.label(expectedCode))."
+            )
+        case .uncertainLanguage(let expectedCode):
+            return String(
+                localized: "The result language couldn't be confirmed as \(TargetLanguage.label(expectedCode))."
+            )
+        case .missingSentenceFixture(let languageCode):
+            return String(
+                localized: "The sentence check has no built-in sample for \(TargetLanguage.label(languageCode))."
+            )
+        }
+    }
+
+    static func duration(_ duration: Duration) -> String {
+        let components = duration.components
+        let seconds = Double(components.seconds)
+            + Double(components.attoseconds) / 1_000_000_000_000_000_000
+        let formatter = MeasurementFormatter()
+        formatter.locale = .current
+        formatter.unitStyle = .short
+        formatter.unitOptions = .providedUnit
+        formatter.numberFormatter.minimumFractionDigits = seconds < 10 ? 1 : 0
+        formatter.numberFormatter.maximumFractionDigits = seconds < 10 ? 1 : 0
+        return formatter.string(from: Measurement(value: max(0, seconds), unit: UnitDuration.seconds))
     }
 }

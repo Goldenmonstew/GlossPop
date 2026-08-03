@@ -1,6 +1,27 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "AI dictionary": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"KI-Wörterbuch"}},"es":{"stringUnit":{"state":"translated","value":"Diccionario de IA"}},"fr":{"stringUnit":{"state":"translated","value":"Dictionnaire IA"}},"ja":{"stringUnit":{"state":"translated","value":"AI辞書"}},"ko":{"stringUnit":{"state":"translated","value":"AI 사전"}},"ru":{"stringUnit":{"state":"translated","value":"ИИ-словарь"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"AI 词典"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"AI 詞典"}}}},
+    "Check compatibility": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Kompatibilität prüfen"}},"es":{"stringUnit":{"state":"translated","value":"Comprobar compatibilidad"}},"fr":{"stringUnit":{"state":"translated","value":"Vérifier la compatibilité"}},"ja":{"stringUnit":{"state":"translated","value":"互換性を確認"}},"ko":{"stringUnit":{"state":"translated","value":"호환성 확인"}},"ru":{"stringUnit":{"state":"translated","value":"Проверить совместимость"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"检查兼容性"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"檢查相容性"}}}},
+    "Couldn't assess": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Prüfung nicht möglich"}},"es":{"stringUnit":{"state":"translated","value":"No se pudo evaluar"}},"fr":{"stringUnit":{"state":"translated","value":"Évaluation impossible"}},"ja":{"stringUnit":{"state":"translated","value":"評価できませんでした"}},"ko":{"stringUnit":{"state":"translated","value":"평가할 수 없음"}},"ru":{"stringUnit":{"state":"translated","value":"Не удалось выполнить проверку"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"无法完成检查"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"無法完成檢查"}}}},
+    "Couldn't complete the compatibility check: %@": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Die Kompatibilitätsprüfung konnte nicht abgeschlossen werden: %@"}},"es":{"stringUnit":{"state":"translated","value":"No se pudo completar la comprobación de compatibilidad: %@"}},"fr":{"stringUnit":{"state":"translated","value":"Impossible de terminer la vérification de compatibilité : %@"}},"ja":{"stringUnit":{"state":"translated","value":"互換性の確認を完了できませんでした: %@"}},"ko":{"stringUnit":{"state":"translated","value":"호환성 확인을 완료하지 못했습니다: %@"}},"ru":{"stringUnit":{"state":"translated","value":"Не удалось завершить проверку совместимости: %@"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"无法完成兼容性检查：%@"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"無法完成相容性檢查：%@"}}}},
+    "First time with this cloud service: “Check compatibility” sends built-in test text to %@ and confirms that future selections may be sent there for translation.": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Bei der ersten Nutzung dieses Cloud-Dienstes sendet „Kompatibilität prüfen“ integrierte Testtexte an %@ und bestätigt, dass künftig ausgewählte Texte zur Übersetzung dorthin gesendet werden dürfen."}},"es":{"stringUnit":{"state":"translated","value":"La primera vez que uses este servicio en la nube, «Comprobar compatibilidad» enviará texto de prueba integrado a %@ y confirmará que las futuras selecciones pueden enviarse allí para traducirlas."}},"fr":{"stringUnit":{"state":"translated","value":"Lors de la première utilisation de ce service cloud, « Vérifier la compatibilité » envoie un texte de test intégré à %@ et confirme que les futures sélections pourront y être envoyées pour traduction."}},"ja":{"stringUnit":{"state":"translated","value":"このクラウドサービスの初回利用時、「互換性を確認」は内蔵テスト文を %@ に送信し、今後選択したテキストを翻訳のために送信できることを確認します。"}},"ko":{"stringUnit":{"state":"translated","value":"이 클라우드 서비스를 처음 사용할 때 ‘호환성 확인’은 내장 테스트 문구를 %@(으)로 전송하며, 앞으로 선택한 텍스트를 번역을 위해 해당 서비스로 보낼 수 있음에 동의합니다."}},"ru":{"stringUnit":{"state":"translated","value":"При первом использовании этого облачного сервиса функция «Проверить совместимость» отправит встроенный тестовый текст на %@ и подтвердит, что в дальнейшем туда можно отправлять выделенный текст для перевода."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"首次使用该云服务时，「检查兼容性」会将内置测试文本发送至 %@，并确认今后可将选中文本发送到该服务进行翻译。"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"首次使用此雲端服務時，「檢查相容性」會將內建測試文字傳送至 %@，並確認日後可將選取的文字傳送到該服務進行翻譯。"}}}},
+    "Fully compatible": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Vollständig kompatibel"}},"es":{"stringUnit":{"state":"translated","value":"Totalmente compatible"}},"fr":{"stringUnit":{"state":"translated","value":"Entièrement compatible"}},"ja":{"stringUnit":{"state":"translated","value":"完全互換"}},"ko":{"stringUnit":{"state":"translated","value":"완전 호환"}},"ru":{"stringUnit":{"state":"translated","value":"Полная совместимость"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"完全兼容"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"完全相容"}}}},
+    "Not compatible": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Nicht kompatibel"}},"es":{"stringUnit":{"state":"translated","value":"No compatible"}},"fr":{"stringUnit":{"state":"translated","value":"Non compatible"}},"ja":{"stringUnit":{"state":"translated","value":"互換性なし"}},"ko":{"stringUnit":{"state":"translated","value":"호환되지 않음"}},"ru":{"stringUnit":{"state":"translated","value":"Несовместимо"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"不兼容"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"不相容"}}}},
+    "Not run": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Nicht ausgeführt"}},"es":{"stringUnit":{"state":"translated","value":"No ejecutado"}},"fr":{"stringUnit":{"state":"translated","value":"Non exécuté"}},"ja":{"stringUnit":{"state":"translated","value":"未実行"}},"ko":{"stringUnit":{"state":"translated","value":"실행되지 않음"}},"ru":{"stringUnit":{"state":"translated","value":"Не выполнено"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"未运行"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"未執行"}}}},
+    "Sentence analysis": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Satzanalyse"}},"es":{"stringUnit":{"state":"translated","value":"Análisis de oraciones"}},"fr":{"stringUnit":{"state":"translated","value":"Analyse de phrase"}},"ja":{"stringUnit":{"state":"translated","value":"文解析"}},"ko":{"stringUnit":{"state":"translated","value":"문장 분석"}},"ru":{"stringUnit":{"state":"translated","value":"Анализ предложения"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"句子解析"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"句子解析"}}}},
+    "Streaming translation": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Streaming-Übersetzung"}},"es":{"stringUnit":{"state":"translated","value":"Traducción en streaming"}},"fr":{"stringUnit":{"state":"translated","value":"Traduction en continu"}},"ja":{"stringUnit":{"state":"translated","value":"ストリーミング翻訳"}},"ko":{"stringUnit":{"state":"translated","value":"스트리밍 번역"}},"ru":{"stringUnit":{"state":"translated","value":"Потоковый перевод"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"流式翻译"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"串流翻譯"}}}},
+    "Testing sentence analysis…": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Satzanalyse wird geprüft…"}},"es":{"stringUnit":{"state":"translated","value":"Probando el análisis de oraciones…"}},"fr":{"stringUnit":{"state":"translated","value":"Test de l’analyse de phrase…"}},"ja":{"stringUnit":{"state":"translated","value":"文解析をテスト中…"}},"ko":{"stringUnit":{"state":"translated","value":"문장 분석 테스트 중…"}},"ru":{"stringUnit":{"state":"translated","value":"Проверка анализа предложения…"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"正在测试句子解析…"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"正在測試句子解析…"}}}},
+    "Testing the AI dictionary…": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"KI-Wörterbuch wird geprüft…"}},"es":{"stringUnit":{"state":"translated","value":"Probando el diccionario de IA…"}},"fr":{"stringUnit":{"state":"translated","value":"Test du dictionnaire IA…"}},"ja":{"stringUnit":{"state":"translated","value":"AI辞書をテスト中…"}},"ko":{"stringUnit":{"state":"translated","value":"AI 사전 테스트 중…"}},"ru":{"stringUnit":{"state":"translated","value":"Проверка ИИ-словаря…"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"正在测试 AI 词典…"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"正在測試 AI 詞典…"}}}},
+    "Testing translation…": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Übersetzung wird geprüft…"}},"es":{"stringUnit":{"state":"translated","value":"Probando la traducción…"}},"fr":{"stringUnit":{"state":"translated","value":"Test de la traduction…"}},"ja":{"stringUnit":{"state":"translated","value":"翻訳をテスト中…"}},"ko":{"stringUnit":{"state":"translated","value":"번역 테스트 중…"}},"ru":{"stringUnit":{"state":"translated","value":"Проверка перевода…"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"正在测试翻译…"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"正在測試翻譯…"}}}},
+    "The AI dictionary result was incomplete.": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Das Ergebnis des KI-Wörterbuchs war unvollständig."}},"es":{"stringUnit":{"state":"translated","value":"El resultado del diccionario de IA estaba incompleto."}},"fr":{"stringUnit":{"state":"translated","value":"Le résultat du dictionnaire IA était incomplet."}},"ja":{"stringUnit":{"state":"translated","value":"AI辞書の結果が不完全でした。"}},"ko":{"stringUnit":{"state":"translated","value":"AI 사전 결과가 불완전합니다."}},"ru":{"stringUnit":{"state":"translated","value":"Результат ИИ-словаря оказался неполным."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"AI 词典结果不完整。"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"AI 詞典結果不完整。"}}}},
+    "The check uses built-in sample text and built-in prompts; custom prompts are not sent or evaluated. It tests streamed translation, the AI dictionary and sentence analysis, and never reads your selection, clipboard, history or vocabulary.": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Die Prüfung verwendet integrierte Beispieltexte und integrierte Prompts; eigene Prompts werden weder gesendet noch ausgewertet. Sie testet Streaming-Übersetzung, KI-Wörterbuch und Satzanalyse und liest niemals deine Auswahl, Zwischenablage, deinen Verlauf oder Wortschatz."}},"es":{"stringUnit":{"state":"translated","value":"La comprobación usa texto de ejemplo y prompts integrados; los prompts personalizados no se envían ni se evalúan. Prueba la traducción en streaming, el diccionario de IA y el análisis de oraciones, y nunca lee tu selección, portapapeles, historial ni vocabulario."}},"fr":{"stringUnit":{"state":"translated","value":"La vérification utilise des textes d’exemple et des prompts intégrés ; les prompts personnalisés ne sont ni envoyés ni évalués. Elle teste la traduction en continu, le dictionnaire IA et l’analyse de phrase, sans jamais lire votre sélection, votre presse-papiers, votre historique ni votre vocabulaire."}},"ja":{"stringUnit":{"state":"translated","value":"確認には内蔵のサンプル文と内蔵プロンプトを使用し、カスタムプロンプトは送信も評価もしません。ストリーミング翻訳、AI辞書、文解析をテストしますが、選択テキスト、クリップボード、履歴、単語帳は一切読み取りません。"}},"ko":{"stringUnit":{"state":"translated","value":"확인에는 내장 샘플 텍스트와 내장 프롬프트만 사용되며, 사용자 지정 프롬프트는 전송하거나 평가하지 않습니다. 스트리밍 번역, AI 사전 및 문장 분석을 테스트하며 선택 영역, 클립보드, 기록 또는 단어장은 절대 읽지 않습니다."}},"ru":{"stringUnit":{"state":"translated","value":"Для проверки используются встроенные примеры текста и встроенные промпты; пользовательские промпты не отправляются и не оцениваются. Проверяются потоковый перевод, ИИ-словарь и анализ предложений; выделенный текст, буфер обмена, история и словарь никогда не читаются."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"检查仅使用内置样例文本和内置提示词；自定义提示词不会被发送或评估。检查会测试流式翻译、AI 词典和句子解析，且绝不会读取你的选区、剪贴板、历史记录或生词本。"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"檢查僅使用內建範例文字和內建提示詞；自訂提示詞不會被傳送或評估。檢查會測試串流翻譯、AI 詞典和句子解析，且絕不會讀取你的選取範圍、剪貼簿、歷史記錄或生詞本。"}}}},
+    "The model returned no streamed translation.": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Das Modell hat keine Streaming-Übersetzung zurückgegeben."}},"es":{"stringUnit":{"state":"translated","value":"El modelo no devolvió ninguna traducción en streaming."}},"fr":{"stringUnit":{"state":"translated","value":"Le modèle n’a renvoyé aucune traduction en continu."}},"ja":{"stringUnit":{"state":"translated","value":"モデルからストリーミング翻訳が返されませんでした。"}},"ko":{"stringUnit":{"state":"translated","value":"모델이 스트리밍 번역을 반환하지 않았습니다."}},"ru":{"stringUnit":{"state":"translated","value":"Модель не вернула потоковый перевод."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"模型未返回流式翻译。"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"模型未傳回串流翻譯。"}}}},
+    "The result language couldn't be confirmed as %@.": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Die Ergebnissprache konnte nicht als %@ bestätigt werden."}},"es":{"stringUnit":{"state":"translated","value":"No se pudo confirmar que el resultado estuviera en %@."}},"fr":{"stringUnit":{"state":"translated","value":"Impossible de confirmer que le résultat est en %@."}},"ja":{"stringUnit":{"state":"translated","value":"結果の言語が%@であることを確認できませんでした。"}},"ko":{"stringUnit":{"state":"translated","value":"결과 언어가 %@(으)로 작성되었는지 확인할 수 없습니다."}},"ru":{"stringUnit":{"state":"translated","value":"Не удалось подтвердить, что результат написан на языке %@."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"无法确认结果语言是否为 %@。"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"無法確認結果語言是否為 %@。"}}}},
+    "The result was not written in %@.": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Das Ergebnis wurde nicht auf %@ verfasst."}},"es":{"stringUnit":{"state":"translated","value":"El resultado no se escribió en %@."}},"fr":{"stringUnit":{"state":"translated","value":"Le résultat n’est pas rédigé en %@."}},"ja":{"stringUnit":{"state":"translated","value":"結果が%@で書かれていません。"}},"ko":{"stringUnit":{"state":"translated","value":"결과가 %@(으)로 작성되지 않았습니다."}},"ru":{"stringUnit":{"state":"translated","value":"Результат написан не на языке %@."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"结果未使用 %@ 书写。"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"結果未使用 %@ 書寫。"}}}},
+    "The sentence check has no built-in sample for %@.": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Für die Satzprüfung ist kein integrierter Beispieltext für %@ verfügbar."}},"es":{"stringUnit":{"state":"translated","value":"La prueba de oraciones no tiene un texto de ejemplo integrado para %@."}},"fr":{"stringUnit":{"state":"translated","value":"Le test de phrase ne dispose d’aucun texte d’exemple intégré pour %@."}},"ja":{"stringUnit":{"state":"translated","value":"文解析の確認には、%@ の内蔵サンプル文がありません。"}},"ko":{"stringUnit":{"state":"translated","value":"문장 분석 확인에 사용할 %@ 내장 샘플 텍스트가 없습니다."}},"ru":{"stringUnit":{"state":"translated","value":"Для проверки анализа предложений нет встроенного примера на языке %@."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"句子解析检查没有 %@ 的内置样例文本。"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"句子解析檢查沒有 %@ 的內建範例文字。"}}}},
+    "The sentence analysis result was incomplete.": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Das Ergebnis der Satzanalyse war unvollständig."}},"es":{"stringUnit":{"state":"translated","value":"El resultado del análisis de oraciones estaba incompleto."}},"fr":{"stringUnit":{"state":"translated","value":"Le résultat de l’analyse de phrase était incomplet."}},"ja":{"stringUnit":{"state":"translated","value":"文解析の結果が不完全でした。"}},"ko":{"stringUnit":{"state":"translated","value":"문장 분석 결과가 불완전합니다."}},"ru":{"stringUnit":{"state":"translated","value":"Результат анализа предложения оказался неполным."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"句子解析结果不完整。"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"句子解析結果不完整。"}}}},
+    "Translation only": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Nur Übersetzung"}},"es":{"stringUnit":{"state":"translated","value":"Solo traducción"}},"fr":{"stringUnit":{"state":"translated","value":"Traduction uniquement"}},"ja":{"stringUnit":{"state":"translated","value":"翻訳のみ"}},"ko":{"stringUnit":{"state":"translated","value":"번역만 가능"}},"ru":{"stringUnit":{"state":"translated","value":"Только перевод"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"仅支持翻译"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"僅支援翻譯"}}}},
     "   O: ": {
       "localizations": {
         "de": {
@@ -1717,110 +1738,6 @@
         }
       }
     },
-    "Connected ✓ configuration is live": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Verbunden ✓ Konfiguration ist aktiv"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Conectado ✓ la configuración está activa"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Connecté ✓ la configuration est active"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "接続済み ✓ 設定は有効です"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "연결됨 ✓ 설정이 적용되었습니다"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Подключено ✓ конфигурация активна"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "连接成功 ✓ 配置已生效"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "已連線 ✓ 設定已生效"
-          }
-        }
-      }
-    },
-    "Connection failed: %@": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Verbindung fehlgeschlagen: %@"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Error de conexión: %@"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Échec de la connexion : %@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "接続に失敗しました: %@"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "연결 실패: %@"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не удалось подключиться: %@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "连接失败：%@"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "連線失敗：%@"
-          }
-        }
-      }
-    },
     "Copy": {
       "localizations": {
         "de": {
@@ -2857,58 +2774,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "第一語言（母語／翻譯目標）"
-          }
-        }
-      }
-    },
-    "First time with this cloud service: clicking “Test connection” confirms sending selected text to %@ (one-time) and enables translation.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bei der ersten Nutzung dieses Cloud-Dienstes: Ein Klick auf „Verbindung testen“ bestätigt einmalig, dass ausgewählter Text an %@ gesendet wird, und aktiviert die Übersetzung."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Primera vez con este servicio en la nube: al hacer clic en “Probar conexión” confirmas (una sola vez) el envío del texto seleccionado a %@ y se activa la traducción."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Première utilisation de ce service cloud : cliquer sur « Tester la connexion » confirme l'envoi du texte sélectionné à %@ (une seule fois) et active la traduction."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "このクラウドサービスの初回利用時：「接続テスト」をクリックすると、選択テキストを %@ に送信することを確認（初回のみ）し、翻訳が有効になります。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "이 클라우드 서비스를 처음 사용합니다. “연결 테스트”를 클릭하면 선택한 텍스트를 %@(으)로 전송하는 데 동의(1회)하고 번역이 활성화됩니다."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Первое использование этого облачного сервиса: нажатие «Проверить подключение» подтверждает отправку выделенного текста на %@ (однократно) и включает перевод."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "首次使用该云服务：点击「测试连接」即确认将选中文本发送至 %@（仅确认一次），并启用翻译。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "首次使用此雲端服務：按一下「測試連線」即代表同意將選取的文字傳送至 %@（僅需確認一次），並啟用翻譯功能。"
           }
         }
       }
@@ -4313,58 +4178,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "一般情況下會直接讀取選取內容，完全不會動到剪貼板；少數會阻擋此方式的 App（例如 Safari）則會改為拷貝選取內容，並立即回復你的剪貼板。"
-          }
-        }
-      }
-    },
-    "Not a valid chat completion response (check the endpoint/model)": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Keine gültige Chat-Completion-Antwort (Endpunkt/Modell prüfen)"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No es una respuesta de chat completion válida (revisa el endpoint/modelo)"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Réponse de complétion de chat non valide (vérifiez le point de terminaison/le modèle)"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "有効なチャット補完応答ではありません（エンドポイント/モデルを確認してください）"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "유효한 chat completion 응답이 아님(엔드포인트/모델을 확인하세요)"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Недопустимый ответ chat completion (проверьте адрес сервера и модель)"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "不是有效的 chat completion 响应（请检查端点/模型）"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "不是有效的 chat completion 回應（請檢查端點／模型）"
           }
         }
       }
@@ -5977,58 +5790,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "系統辭典 · 離線 · 正在查詢 AI 辭典…"
-          }
-        }
-      }
-    },
-    "Test connection": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Verbindung testen"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Probar conexión"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tester la connexion"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "接続テスト"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "연결 테스트"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Проверить подключение"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试连接"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "測試連線"
           }
         }
       }

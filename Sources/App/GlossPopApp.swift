@@ -15,12 +15,34 @@ struct AppLaunchMode: Equatable {
         "--demo-vocabulary-export",
         "--demo-vocabulary-recovery",
         "--demo-vocabulary-clear",
+        "--demo-settings-assessment-running",
+        "--demo-settings-assessment-compatible",
+        "--demo-settings-assessment-translation-only",
+        "--demo-settings-assessment-incompatible",
+        "--demo-settings-assessment-inconclusive",
     ]
 
     let isDemo: Bool
 
     init(arguments: [String]) {
         isDemo = arguments.contains { Self.demoEntryFlags.contains($0) }
+    }
+}
+
+enum AppLifecycleDisposition: Equatable {
+    case run
+    case remainIdleForXCTest
+    case terminateDetachedTestHost
+}
+
+struct AppRuntimeGuard {
+    static func lifecycleDisposition(
+        isXCTestLoaded: Bool,
+        isTestHostBuild: Bool
+    ) -> AppLifecycleDisposition {
+        if isXCTestLoaded { return .remainIdleForXCTest }
+        if isTestHostBuild { return .terminateDetachedTestHost }
+        return .run
     }
 }
 
@@ -76,7 +98,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private var hotKeyOK = false
 
+    private static var isTestHostBuild: Bool {
+#if GLOSSPOP_TEST_HOST
+        true
+#else
+        false
+#endif
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        switch AppRuntimeGuard.lifecycleDisposition(
+            isXCTestLoaded: NSClassFromString("XCTestCase") != nil,
+            isTestHostBuild: Self.isTestHostBuild
+        ) {
+        case .remainIdleForXCTest:
+            return
+        case .terminateDetachedTestHost:
+            NSApp.terminate(nil)
+            return
+        case .run:
+            break
+        }
         if CommandLine.arguments.contains("--dark") {
             NSApp.appearance = NSAppearance(named: .darkAqua)
         }
@@ -86,9 +128,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             NSApp.terminate(nil)
             return
         }
-        // Under XCTest, GlossPop is only the test HOST — skip the agent lifecycle (the single-instance
-        // guard would otherwise terminate the host when another GlossPop is running, breaking the test boot).
-        if NSClassFromString("XCTestCase") != nil { return }
         // Single-instance: a 2nd launch adds a 2nd menu icon and silently fails to grab the hotkey.
         // Isolated demo entry points deliberately skip normal lifecycle setup and may run beside the app.
         let bundleID = Bundle.main.bundleIdentifier ?? "com.wanruncong.glosspop"
@@ -129,6 +168,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func presentRequestedDemos() {
         if CommandLine.arguments.contains("--demo-card") { presentDemoCard() }   // dev/verify aid: silent screenshots
         if CommandLine.arguments.contains("--demo-sentence") { presentDemoSentence() } // dev/verify aid: the sentence card
+        if let demo = SettingsAssessmentDemo(arguments: CommandLine.arguments) {
+            settingsController.show(demo: demo)
+        }
         if CommandLine.arguments.contains("--demo-vocabulary")
             || CommandLine.arguments.contains("--demo-vocabulary-empty")
             || CommandLine.arguments.contains("--demo-vocabulary-small")

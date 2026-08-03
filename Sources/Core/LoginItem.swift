@@ -3,11 +3,21 @@ import ServiceManagement
 
 // Launch at login via SMAppService (macOS 13+; no helper bundle, no entitlement needed for a non-sandboxed app).
 enum LoginItem {
-    static var isEnabled: Bool { SMAppService.mainApp.status == .enabled }
+    static let canManageCurrentApp = AppIdentity.isCurrentInstalledRelease
+
+    static var isEnabled: Bool {
+        canManageCurrentApp && SMAppService.mainApp.status == .enabled
+    }
     // Registered but the user must approve it in System Settings ▸ General ▸ Login Items.
-    static var requiresApproval: Bool { SMAppService.mainApp.status == .requiresApproval }
+    static var requiresApproval: Bool {
+        canManageCurrentApp && SMAppService.mainApp.status == .requiresApproval
+    }
     // The toggle should stay ON for both states (else a pending item looks un-enabled and re-toggling loops).
-    static var isActive: Bool { let s = SMAppService.mainApp.status; return s == .enabled || s == .requiresApproval }
+    static var isActive: Bool {
+        guard canManageCurrentApp else { return false }
+        let status = SMAppService.mainApp.status
+        return status == .enabled || status == .requiresApproval
+    }
 
     // SMAppService.status alone cannot tell "the OS dropped the item" (major upgrades reset
     // background-item approval) apart from "the user never enabled it" — persist the intent.
@@ -19,6 +29,7 @@ enum LoginItem {
 
     @discardableResult
     static func setEnabled(_ on: Bool) -> Bool {
+        guard canManageCurrentApp else { return false }
         do {
             if on {
                 if SMAppService.mainApp.status != .enabled { try SMAppService.mainApp.register() }
@@ -57,6 +68,7 @@ enum LoginItem {
     /// app ever registers, so a registered item — even one pending approval — proves past intent),
     /// and re-register a login item the OS dropped (e.g. a major-upgrade background-items reset).
     @MainActor static func reconcileAtLaunch() {
+        guard canManageCurrentApp else { return }
         switch SMAppService.mainApp.status {
         case .enabled:
             userWantsEnabled = true

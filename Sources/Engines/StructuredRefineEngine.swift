@@ -42,8 +42,9 @@ enum StructuredPrompt {
             // so the analysis stays readable even when translating OUT of it.
             let spec = """
             Translate the sentence into \(first), then analyse it for a \(second) reader. Write \
-            refinedTranslation, every "point", every "explanation" and every "notes" entry in \(second) — \
-            never in English unless \(second) is English. Keep "subject", "predicate" and "objects" as the \
+            "refinedTranslation" in \(first); write every "point", every "explanation" and every "notes" \
+            entry in \(second) — never in English unless \(second) is English. Keep "subject", "predicate" \
+            and "objects" as the \
             exact words from the original sentence. In "grammarPoints" include ONLY what genuinely helps \
             understanding: key or uncommon vocabulary and domain terms (give the meaning), set phrases and \
             idioms, and non-obvious grammar (subordination, ellipsis, unusual word order, tricky \
@@ -54,7 +55,7 @@ enum StructuredPrompt {
             it genuinely helps; never pad with filler, obvious words or uncertain guesses. A simple sentence \
             still gets few or none. Use "notes" for translation caveats, cultural context or ambiguities, or \
             [] when nothing is useful. Return JSON:
-            {"refinedTranslation":"","syntax":{"subject":"","predicate":"","objects":[],"grammarPoints":[{"point":"(in \(second))","explanation":"(in \(second))"}]},"notes":["(in \(second))"]}
+            {"refinedTranslation":"(in \(first))","syntax":{"subject":"","predicate":"","objects":[],"grammarPoints":[{"point":"(in \(second))","explanation":"(in \(second))"}]},"notes":["(in \(second))"]}
             """
             // A worked example lifts weaker models close to the strong ones (eval: floor model 3.60→4.25,
             // no regression up top) without over-explaining simple sentences. Attached only when the

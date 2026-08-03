@@ -116,7 +116,7 @@ enum BYOKConfig {
     }
 
     /// Single source of truth for normalizing user input into (host-only base, full path[+query]). Used by
-    /// save() AND testConnection()/fetchModels() so the tested endpoint is ALWAYS the persisted one.
+    /// save(), capability assessment and fetchModels() so the tested endpoint is ALWAYS the persisted one.
     static func fold(base rawBase: String, path rawPath: String) -> (base: String, path: String) {
         let split = hostOnly(normalized(rawBase))
         let ap = sanitizedPath(rawPath)
@@ -200,4 +200,18 @@ struct BYOKSnapshot: Sendable {
     // DESTINATION (本机 vs 云) so the panel honors the "标注去向" promise without exposing the URL.
     var label: String { model }
     var provenance: String { isLocal ? String(localized: " · on-device") : String(localized: " · cloud") }
+
+    /// Capability assessment measures the model with GlossPop's built-in prompts. A saved custom prompt
+    /// may contain private text and can also replace `$text` entirely, so it is neither sent nor evaluated.
+    var forCapabilityAssessment: BYOKSnapshot {
+        BYOKSnapshot(
+            baseURL: baseURL,
+            apiPath: apiPath,
+            model: model,
+            apiKey: apiKey,
+            reasoningEffort: reasoningEffort,
+            customSystem: "",
+            customUser: ""
+        )
+    }
 }
