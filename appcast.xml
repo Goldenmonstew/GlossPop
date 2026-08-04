@@ -3,12 +3,12 @@
     <channel>
         <title>GlossPop</title>
         <item>
-            <title>1.1.1</title>
-            <pubDate>Mon, 03 Aug 2026 19:40:42 +0800</pubDate>
-            <sparkle:version>18</sparkle:version>
-            <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
+            <title>1.2.0</title>
+            <pubDate>Tue, 04 Aug 2026 20:35:18 +0800</pubDate>
+            <sparkle:version>19</sparkle:version>
+            <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/Goldenmonstew/GlossPop/releases/download/v1.1.1/GlossPop-1.1.1.dmg" length="2701960" type="application/octet-stream" sparkle:edSignature="3PPY9STi/k0r7Y4hyBXhrcwJ0pM+1DiNNNvbsCjSaNlDc9yinfWvd0BXcDqvQF7HhmPTfzDMEDHMWXVMsxl3CA=="/>
+            <enclosure url="https://github.com/Goldenmonstew/GlossPop/releases/download/v1.2.0/GlossPop-1.2.0.dmg" length="2760394" type="application/octet-stream" sparkle:edSignature="l+VI6iZs3nZwnwjTKdZgHDO+R107WsTz5uYm8lpOqeCF1zNmZwHovcw521Nw0kzvTac9YxLCe6SYHL0R2PYLBg=="/>
         </item>
     </channel>
 </rss>
