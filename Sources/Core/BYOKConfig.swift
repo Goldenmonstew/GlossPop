@@ -1,6 +1,18 @@
 import Foundation
 
-// BYOK config: one OpenAI-compatible custom endpoint (cloud / 中转 relay / local Ollama/LM Studio).
+enum BYOKAPIFormat: String, Codable, CaseIterable, Hashable, Sendable {
+    case openAI
+    case anthropic
+}
+
+enum BYOKAPIKeyHeader: String, Codable, CaseIterable, Hashable, Sendable {
+    case automatic
+    case authorizationBearer
+    case xAPIKey
+    case none
+}
+
+// BYOK config: an OpenAI- or Anthropic-compatible custom endpoint (cloud / 中转 relay / local).
 // base URL + model in UserDefaults; API key in Keychain (PLAN §4, §3). For 国行 no-FM users this is
 // the primary refine path.
 enum BYOKConfig {
@@ -48,10 +60,34 @@ enum BYOKConfig {
         set { UserDefaults.standard.set(newValue, forKey: "model.reasoningEffort") }
     }
 
+    private static let kApiFormat = "byok.apiFormat"
+    static var apiFormat: BYOKAPIFormat {
+        get {
+            guard let rawValue = UserDefaults.standard.string(forKey: kApiFormat) else { return .openAI }
+            return BYOKAPIFormat(rawValue: rawValue) ?? .openAI
+        }
+        set { UserDefaults.standard.set(newValue.rawValue, forKey: kApiFormat) }
+    }
+
+    private static let kApiKeyHeader = "byok.apiKeyHeader"
+    static var apiKeyHeader: BYOKAPIKeyHeader {
+        get {
+            guard let rawValue = UserDefaults.standard.string(forKey: kApiKeyHeader) else { return .automatic }
+            return BYOKAPIKeyHeader(rawValue: rawValue) ?? .automatic
+        }
+        set { UserDefaults.standard.set(newValue.rawValue, forKey: kApiKeyHeader) }
+    }
+
     // API path appended to the host base (like the competitor's "Custom API Path"), default OpenAI's.
     private static let kApiPath = "byok.apiPath"
     static var apiPath: String {
-        get { UserDefaults.standard.string(forKey: kApiPath) ?? "/v1/chat/completions" }
+        get {
+            let defaultPath = apiFormat == .anthropic ? "/v1/messages" : "/v1/chat/completions"
+            guard let stored = UserDefaults.standard.string(forKey: kApiPath),
+                  !stored.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            else { return defaultPath }
+            return stored
+        }
         set { UserDefaults.standard.set(newValue, forKey: kApiPath) }
     }
 
@@ -74,14 +110,33 @@ enum BYOKConfig {
     /// URLComponents so host/port/IPv6/userinfo survive. Also heal a stale enabled=false.
     static func migrateURLSplitIfNeeded() {
         if UserDefaults.standard.object(forKey: kApiPath) == nil, let oldBase = url(baseURL) {
-            let oldChat = oldBase.appending(path: "chat/completions")          // EXACT pre-migration URL
-            if var comp = URLComponents(url: oldChat, resolvingAgainstBaseURL: false), comp.host != nil {
-                let pathQuery = comp.path + (comp.query.map { "?\($0)" } ?? "")
-                comp.path = ""; comp.query = nil; comp.fragment = nil          // base = scheme://[user@]host[:port]
-                if let hostBase = comp.string {
-                    baseURL = hostBase
-                    apiPath = pathQuery.isEmpty ? "/v1/chat/completions" : pathQuery
+            if UserDefaults.standard.object(forKey: kApiFormat) != nil {
+                // A format-aware configuration belongs to the new schema. If its path is missing, use that
+                // protocol's default and retain any SDK-style prefix carried by the base URL.
+                let defaultPath = apiFormat == .anthropic ? "/v1/messages" : "/v1/chat/completions"
+                let folded = fold(base: oldBase.absoluteString, path: defaultPath)
+                baseURL = folded.base
+                apiPath = folded.path
+            } else {
+                let oldChat = oldBase.appending(path: "chat/completions")      // EXACT pre-migration URL
+                if var comp = URLComponents(url: oldChat, resolvingAgainstBaseURL: false), comp.host != nil {
+                    let pathQuery = comp.path + (comp.query.map { "?\($0)" } ?? "")
+                    comp.path = ""; comp.query = nil; comp.fragment = nil      // base = scheme://[user@]host[:port]
+                    if let hostBase = comp.string {
+                        baseURL = hostBase
+                        apiPath = pathQuery.isEmpty ? "/v1/chat/completions" : pathQuery
+                    }
                 }
+            }
+        }
+        // The original Anthropic preset incorrectly used OpenAI Chat Completions and predates apiFormat.
+        // Heal only that impossible official combination; custom endpoints and explicit new formats stay put.
+        if UserDefaults.standard.object(forKey: kApiFormat) == nil,
+           host(baseURL).lowercased() == "api.anthropic.com" {
+            let oldPath = sanitizedPath(apiPath)
+            if oldPath.path.hasSuffix("/chat/completions") {
+                apiPath = "/v1/messages" + (oldPath.query.map { "?\($0)" } ?? "")
+                apiFormat = .anthropic
             }
         }
         // Configured-but-disabled (legacy enabled toggle removed) → heal so translation works — but NEVER
@@ -121,10 +176,24 @@ enum BYOKConfig {
         let split = hostOnly(normalized(rawBase))
         let ap = sanitizedPath(rawPath)
         let mergedQuery = ap.query ?? split.query
-        return (split.base, (split.path ?? "") + ap.path + (mergedQuery.map { "?\($0)" } ?? ""))
+        let mergedPath = mergePaths(prefix: split.path, suffix: ap.path)
+        return (split.base, mergedPath + (mergedQuery.map { "?\($0)" } ?? ""))
     }
 
-    /// Full chat-completions URL = host base + path, built via URLComponents (no string injection). The path
+    /// Join a path-bearing base URL with an API path using the longest shared segment boundary. This accepts
+    /// both SDK-style bases (`.../apps/anthropic` + `/v1/messages`) and complete request URLs without
+    /// producing duplicated routes such as `/v1/messages/v1/messages` or `/v1/v1/chat/completions`.
+    private static func mergePaths(prefix: String?, suffix: String) -> String {
+        let left = (prefix ?? "").split(separator: "/").map(String.init)
+        let right = suffix.split(separator: "/").map(String.init)
+        var overlap = min(left.count, right.count)
+        while overlap > 0 && Array(left.suffix(overlap)) != Array(right.prefix(overlap)) {
+            overlap -= 1
+        }
+        return "/" + (left + Array(right.dropFirst(overlap))).joined(separator: "/")
+    }
+
+    /// Full model request URL = host base + path, built via URLComponents (no string injection). The path
     /// is host-stripped, so `apiPath` stays a path on the configured host. nil if base isn't a valid host.
     static func chatURL(base: String, path: String) -> URL? {
         guard let host = url(base), var comp = URLComponents(url: host, resolvingAgainstBaseURL: false) else { return nil }
@@ -133,13 +202,15 @@ enum BYOKConfig {
         comp.query = cleaned.query
         return comp.url
     }
-    /// Derive the /models URL from the chat path (…/chat/completions SUFFIX → …/models; else /v1/models),
-    /// preserving any query so it matches the chat endpoint (e.g. ?api-version=…).
+    /// Derive the sibling /models URL from either supported request path, preserving any provider prefix
+    /// and query so it matches the configured endpoint (e.g. /relay/v1/messages → /relay/v1/models).
     static func modelsURL(base: String, path: String) -> URL? {
-        let parts = sanitizedPath(path)
-        let suffix = "/chat/completions"
-        let modelsPath = parts.path.hasSuffix(suffix) ? String(parts.path.dropLast(suffix.count)) + "/models" : "/v1/models"
-        return chatURL(base: base, path: modelsPath + (parts.query.map { "?\($0)" } ?? ""))
+        let folded = fold(base: base, path: path)
+        let parts = sanitizedPath(folded.path)
+        let suffixes = ["/chat/completions", "/messages"]
+        let matched = suffixes.first { parts.path.hasSuffix($0) }
+        let modelsPath = matched.map { String(parts.path.dropLast($0.count)) + "/models" } ?? "/v1/models"
+        return chatURL(base: folded.base, path: modelsPath + (parts.query.map { "?\($0)" } ?? ""))
     }
 
     private static let kConsentedHost = "byok.consentedHost"
@@ -178,7 +249,9 @@ enum BYOKConfig {
     /// even if the user edits settings mid-stream (privacy promise).
     static func snapshot() -> BYOKSnapshot? {
         guard isReady else { return nil }
-        return BYOKSnapshot(baseURL: normalized(baseURL), apiPath: apiPath, model: model, apiKey: apiKey,
+        return BYOKSnapshot(baseURL: normalized(baseURL), apiPath: apiPath, apiFormat: apiFormat,
+                            apiKeyHeader: apiKeyHeader,
+                            model: model, apiKey: apiKey,
                             reasoningEffort: reasoningEffort,
                             customSystem: customPromptEnabled ? customSystemPrompt : "",
                             customUser: customPromptEnabled ? customUserPrompt : "")
@@ -188,14 +261,42 @@ enum BYOKConfig {
 struct BYOKSnapshot: Sendable {
     let baseURL: String
     let apiPath: String
+    let apiFormat: BYOKAPIFormat
+    let apiKeyHeader: BYOKAPIKeyHeader
     let model: String
     let apiKey: String
     let reasoningEffort: String      // "default" = omit the param
     let customSystem: String         // empty = use the built-in prompt
     let customUser: String
+
+    init(
+        baseURL: String,
+        apiPath: String,
+        apiFormat: BYOKAPIFormat = .openAI,
+        apiKeyHeader: BYOKAPIKeyHeader = .automatic,
+        model: String,
+        apiKey: String,
+        reasoningEffort: String,
+        customSystem: String,
+        customUser: String
+    ) {
+        self.baseURL = baseURL
+        self.apiPath = apiPath
+        self.apiFormat = apiFormat
+        self.apiKeyHeader = apiKeyHeader
+        self.model = model
+        self.apiKey = apiKey
+        self.reasoningEffort = reasoningEffort
+        self.customSystem = customSystem
+        self.customUser = customUser
+    }
+
     var host: String { BYOKConfig.host(baseURL) }
     var isLocal: Bool { BYOKConfig.isLocal(baseURL) }
-    var chatURL: URL? { BYOKConfig.chatURL(base: baseURL, path: apiPath) }
+    var chatURL: URL? {
+        let folded = BYOKConfig.fold(base: baseURL, path: apiPath)
+        return BYOKConfig.chatURL(base: folded.base, path: folded.path)
+    }
     // Result card shows the MODEL (like Bob/openai-translator), not the raw endpoint — but still marks the
     // DESTINATION (本机 vs 云) so the panel honors the "标注去向" promise without exposing the URL.
     var label: String { model }
@@ -207,6 +308,8 @@ struct BYOKSnapshot: Sendable {
         BYOKSnapshot(
             baseURL: baseURL,
             apiPath: apiPath,
+            apiFormat: apiFormat,
+            apiKeyHeader: apiKeyHeader,
             model: model,
             apiKey: apiKey,
             reasoningEffort: reasoningEffort,

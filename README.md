@@ -21,7 +21,7 @@ The UI follows your system language — English, 简体中文, 繁體中文, 日
 Most swipe-translators are fragile (resident event taps that lag the system, clipboard pollution) and just dump a flat translation. GlossPop is **input-aware** and reliable:
 
 - 🧠 **It adapts to what you select.** A word or phrase → a full **dictionary** entry (pronunciation, part-of-speech senses, examples, synonyms, idioms). A sentence → **translation + analysis**: subject/predicate/object, grammar points, and notes on idioms or tricky terms — all explained in *your* language, not the source's. A whole paragraph keeps the translation and notes but skips the per-sentence breakdown. Plain phrases → a clean streamed translation.
-- 🔑 **Your model.** Translation runs on the LLM you choose — **bring your own key** to any OpenAI-compatible endpoint (cloud, a relay, or a local **Ollama** / **LM Studio**), or on-device **Apple Foundation Models** where available.
+- 🔑 **Your model.** Translation runs on the LLM you choose — **bring your own key** to an OpenAI- or Anthropic-compatible endpoint (cloud, a relay, or a local **Ollama** / **LM Studio**), or use on-device **Apple Foundation Models** where available.
 - 🔒 **Zero side-effects.** Accessibility-first capture — no resident `CGEventTap`, the clipboard is never touched by default, focus never leaves your app. A provenance badge tells you exactly where your text went.
 
 <p align="center">
@@ -56,9 +56,9 @@ Updates are delivered automatically via [Sparkle](https://sparkle-project.org) (
 
 Settings ▸ *Translation model*:
 
-1. **Provider / Endpoint** — any OpenAI-compatible endpoint (OpenAI, DeepSeek, your relay, or `http://localhost:11434` for Ollama).
-2. **API key** — stored in your macOS **Keychain**, never anywhere else.
-3. **Model** — type it, or fetch the list from `/v1/models`; **Check compatibility** uses GlossPop's built-in sample text and prompts to exercise the real streamed-translation, AI-dictionary and sentence-analysis paths, check output language, and report each stage's latency. Custom prompts are neither sent nor assessed.
+1. **Provider / Endpoint** — choose an OpenAI or Anthropic Messages provider, or configure a custom relay/local endpoint. Alibaba Cloud Model Studio has separate built-in **OpenAI-compatible** and **Anthropic-compatible** presets; to use a workspace-specific API Host, select **Custom / relay** and enter that host with the matching API format and path.
+2. **API key** — stored in your macOS **Keychain**, never anywhere else. Custom relays support Bearer, `x-api-key`, or no authentication; provider-specific OAuth and request-signing schemes are not supported. **Automatic** uses Bearer for OpenAI, `x-api-key` for Anthropic, and no API key for localhost.
+3. **Model** — type its ID, or fetch the list when the endpoint exposes `/v1/models`. Alibaba Cloud Model Studio's Anthropic endpoint does not provide a model list, so enter its model ID manually. **Check compatibility** uses GlossPop's built-in sample text and prompts to exercise the real streamed-translation, AI-dictionary and sentence-analysis paths, check output language, and report each stage's latency. Custom prompts are neither sent nor assessed.
 4. Changes apply immediately — the first check on a new cloud host sends only the disclosed built-in sample text and prompts, and doubles as your one-time consent for future selected text.
 
 When the endpoint is a cloud/relay host, the panel's footer is badged **“cloud”** so you always know your text left the machine; loopback (`localhost`) is badged **“on-device”**. The UI is localised into English, 简体中文, 繁體中文, 日本語, 한국어, Français, Deutsch, Español and Русский, following your system language.

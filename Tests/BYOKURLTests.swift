@@ -18,6 +18,22 @@ final class BYOKURLTests: XCTestCase {
         XCTAssertEqual(u?.absoluteString, "https://relay.example.com/aigc/v1/models")
     }
 
+    func testModelsURLDerivedFromAnthropicMessagesPath() {
+        let u = BYOKConfig.modelsURL(
+            base: "https://relay.example.com",
+            path: "/apps/anthropic/v1/messages"
+        )
+        XCTAssertEqual(u?.absoluteString, "https://relay.example.com/apps/anthropic/v1/models")
+    }
+
+    func testModelsURLAcceptsACompleteAnthropicRequestURL() {
+        let u = BYOKConfig.modelsURL(
+            base: "https://relay.example.com/apps/anthropic/v1/messages",
+            path: "/v1/messages"
+        )
+        XCTAssertEqual(u?.absoluteString, "https://relay.example.com/apps/anthropic/v1/models")
+    }
+
     func testModelsURLFallbackWhenPathHasNoChatCompletions() {
         let u = BYOKConfig.modelsURL(base: "https://api.openai.com", path: "/custom")
         XCTAssertEqual(u?.absoluteString, "https://api.openai.com/v1/models")
@@ -71,10 +87,11 @@ final class BYOKURLTests: XCTestCase {
     }
 
     func testFoldIsSlashSafeForLeadinglessPath() {
-        // Mirrors save()'s fold: base path + sanitized apiPath must not collide into "/aigcv1/...".
-        let split = BYOKConfig.hostOnly("https://relay.example.com/aigc")
-        let ap = BYOKConfig.sanitizedPath("v1/chat/completions") // user typed it without a leading slash
-        XCTAssertEqual((split.path ?? "") + ap.path, "/aigc/v1/chat/completions")
+        let folded = BYOKConfig.fold(
+            base: "https://relay.example.com/aigc",
+            path: "v1/chat/completions"
+        )
+        XCTAssertEqual(folded.path, "/aigc/v1/chat/completions")
     }
 
     func testModelsURLPreservesQuery() {
@@ -96,11 +113,58 @@ final class BYOKURLTests: XCTestCase {
         XCTAssertEqual(f.path, "/aigc/v1/chat/completions?api-version=2024")
     }
 
-    func testFoldMakesTestAndSaveAgree() {
-        // The whole point: test/fetch fold the SAME way save persists, so a green test == working translate.
+    func testFoldDeduplicatesSharedAPIVersionSegment() {
         let f = BYOKConfig.fold(base: "https://api.example.com/v1", path: "/v1/chat/completions")
         XCTAssertEqual(BYOKConfig.chatURL(base: f.base, path: f.path)?.absoluteString,
-                       "https://api.example.com/v1/v1/chat/completions") // consistent (reveals the redundant /v1 honestly)
+                       "https://api.example.com/v1/chat/completions")
+    }
+
+    func testFoldAcceptsCompleteAnthropicRequestURLWithoutDuplicatingMessagesPath() {
+        let f = BYOKConfig.fold(
+            base: "https://relay.example.com/apps/anthropic/v1/messages",
+            path: "/v1/messages"
+        )
+
+        XCTAssertEqual(f.base, "https://relay.example.com")
+        XCTAssertEqual(f.path, "/apps/anthropic/v1/messages")
+        XCTAssertEqual(
+            BYOKConfig.chatURL(base: f.base, path: f.path)?.absoluteString,
+            "https://relay.example.com/apps/anthropic/v1/messages"
+        )
+    }
+
+    func testSnapshotAcceptsCompleteAnthropicRequestURLWithoutDuplicatingMessagesPath() {
+        let snapshot = BYOKSnapshot(
+            baseURL: "https://relay.example.com/apps/anthropic/v1/messages",
+            apiPath: "/v1/messages",
+            apiFormat: .anthropic,
+            model: "relay-model",
+            apiKey: "",
+            reasoningEffort: "default",
+            customSystem: "",
+            customUser: ""
+        )
+
+        XCTAssertEqual(snapshot.chatURL?.absoluteString, "https://relay.example.com/apps/anthropic/v1/messages")
+    }
+
+    func testFoldJoinsAnthropicSDKBaseWithMessagesPath() {
+        let f = BYOKConfig.fold(
+            base: "https://dashscope.aliyuncs.com/apps/anthropic",
+            path: "/v1/messages"
+        )
+
+        XCTAssertEqual(f.base, "https://dashscope.aliyuncs.com")
+        XCTAssertEqual(f.path, "/apps/anthropic/v1/messages")
+    }
+
+    func testFoldDeduplicatesAnIdenticalCompleteAPIPath() {
+        let f = BYOKConfig.fold(
+            base: "https://relay.example.com/apps/anthropic/v1/messages?workspace=one",
+            path: "/apps/anthropic/v1/messages"
+        )
+
+        XCTAssertEqual(f.path, "/apps/anthropic/v1/messages?workspace=one")
     }
 
     func testFoldHostOnlyBaseUnchanged() {

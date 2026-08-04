@@ -12,9 +12,13 @@ extension OpenAICompatibleEngine: StructuredRefineEngine {
         request.httpMethod = "POST"
         request.timeoutInterval = 60
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if !snapshot.apiKey.isEmpty {
-            request.setValue("Bearer \(snapshot.apiKey)", forHTTPHeaderField: "Authorization")
-        }
+        BYOKAuthentication.apply(
+            apiKey: snapshot.apiKey,
+            format: snapshot.apiFormat,
+            header: snapshot.apiKeyHeader,
+            isLocal: snapshot.isLocal,
+            to: &request
+        )
         var body: [String: Any] = [
             "model": snapshot.model,
             "stream": false,
@@ -37,10 +41,18 @@ extension OpenAICompatibleEngine: StructuredRefineEngine {
                 let (data, response) = try await session.data(for: request)
                 let code = (response as? HTTPURLResponse)?.statusCode ?? -1
                 if (400..<500).contains(code) {
-                    throw RefineError.http(statusCode: code, host: snapshot.host)
+                    throw RefineError.http(
+                        statusCode: code,
+                        host: snapshot.host,
+                        detail: UpstreamErrorDetail.detail(from: data, apiKey: snapshot.apiKey)
+                    )
                 }
                 guard (200..<300).contains(code) else {
-                    lastError = RefineError.http(statusCode: code, host: snapshot.host)
+                    lastError = RefineError.http(
+                        statusCode: code,
+                        host: snapshot.host,
+                        detail: UpstreamErrorDetail.detail(from: data, apiKey: snapshot.apiKey)
+                    )
                     continue
                 }
                 guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],

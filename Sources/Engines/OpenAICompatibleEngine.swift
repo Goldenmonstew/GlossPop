@@ -32,9 +32,13 @@ struct OpenAICompatibleEngine: RefineEngine {
                     request.httpMethod = "POST"
                     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                     request.timeoutInterval = 60 // idle timeout — a stalled relay can't hang the card forever
-                    if !snapshot.apiKey.isEmpty {
-                        request.setValue("Bearer \(snapshot.apiKey)", forHTTPHeaderField: "Authorization")
-                    }
+                    BYOKAuthentication.apply(
+                        apiKey: snapshot.apiKey,
+                        format: snapshot.apiFormat,
+                        header: snapshot.apiKeyHeader,
+                        isLocal: snapshot.isLocal,
+                        to: &request
+                    )
                     var body: [String: Any] = [
                         "model": snapshot.model,
                         "stream": true,
@@ -47,7 +51,15 @@ struct OpenAICompatibleEngine: RefineEngine {
 
                     let (bytes, response) = try await session.bytes(for: request)
                     if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-                        throw RefineError.http(statusCode: http.statusCode, host: snapshot.host)
+                        let detail = try await UpstreamErrorDetail.detail(
+                            from: bytes,
+                            apiKey: snapshot.apiKey
+                        )
+                        throw RefineError.http(
+                            statusCode: http.statusCode,
+                            host: snapshot.host,
+                            detail: detail
+                        )
                     }
 
                     var accumulated = ""
@@ -55,7 +67,13 @@ struct OpenAICompatibleEngine: RefineEngine {
                         switch SSE.parse(line: line) {
                         case .delta(let text): accumulated += text; continuation.yield(accumulated)
                         case .done: break streaming
-                        case .error(let message): throw RefineError.message(message)
+                        case .error(let message):
+                            throw RefineError.message(
+                                UpstreamErrorDetail.sanitized(
+                                    message,
+                                    redacting: [snapshot.apiKey]
+                                ) ?? "upstream error"
+                            )
                         case .ignore: continue
                         }
                     }
@@ -72,7 +90,7 @@ struct OpenAICompatibleEngine: RefineEngine {
 enum RefineError: LocalizedError {
     case message(String)
     case invalidEndpoint(String)
-    case http(statusCode: Int, host: String)
+    case http(statusCode: Int, host: String, detail: String? = nil)
     case malformedStructuredResponse
     case emptyStructuredResult
 
@@ -80,8 +98,9 @@ enum RefineError: LocalizedError {
         switch self {
         case .message(let message), .invalidEndpoint(let message):
             return message
-        case .http(let statusCode, let host):
-            return "HTTP \(statusCode) from \(host)"
+        case .http(let statusCode, let host, let detail):
+            let summary = "HTTP \(statusCode) from \(host)"
+            return detail.map { "\(summary) — \($0)" } ?? summary
         case .malformedStructuredResponse:
             return String(localized: "Couldn't parse the structured response")
         case .emptyStructuredResult:

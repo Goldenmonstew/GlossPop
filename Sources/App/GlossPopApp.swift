@@ -20,6 +20,9 @@ struct AppLaunchMode: Equatable {
         "--demo-settings-assessment-translation-only",
         "--demo-settings-assessment-incompatible",
         "--demo-settings-assessment-inconclusive",
+        "--demo-settings-anthropic",
+        "--demo-settings-anthropic-relay",
+        "--demo-settings-anthropic-workspace",
     ]
 
     let isDemo: Bool
@@ -728,8 +731,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// Structured engine for the sentence-syntax stage. FM @Generable structured is a stub, so only BYOK
     /// provides structured output; without it the sentence path falls through to plain translation.
-    private func structuredRefiner() -> StructuredRefineEngine? {
-        BYOKConfig.snapshot().map { OpenAICompatibleEngine(snapshot: $0) }
+    private func structuredRefiner() -> (any StructuredRefineEngine)? {
+        BYOKConfig.snapshot().map { BYOKEngineFactory.make(snapshot: $0) }
     }
 
     /// Sentence = PROGRESSIVE: stream the translation first (instant feel), THEN append the syntax analysis,
@@ -817,10 +820,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         HistoryStore.record(source: source, result: translation, subtitle: panel.model.subtitle)
     }
 
-    /// The user's CONFIGURED model wins: if BYOK is ready, use it — so the model, reasoning_effort, and
-    /// custom prompt they set actually apply. Apple FM is only the fallback when no BYOK is set up.
-    private func activeRefiner() async -> RefineEngine? {
-        if let byok = BYOKConfig.snapshot().map({ OpenAICompatibleEngine(snapshot: $0) }) { return byok }
+    /// The user's CONFIGURED model wins: if BYOK is ready, use its protocol-native engine so the model and
+    /// supported options apply. Apple FM is only the fallback when no BYOK is set up.
+    private func activeRefiner() async -> (any RefineEngine)? {
+        if let snapshot = BYOKConfig.snapshot() {
+            return BYOKEngineFactory.make(snapshot: snapshot)
+        }
         if await fmEngine.isAvailable() { return fmEngine }
         return nil
     }

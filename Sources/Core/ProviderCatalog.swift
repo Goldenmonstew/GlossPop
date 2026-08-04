@@ -1,17 +1,40 @@
 import Foundation
 
-// Data-driven provider presets — one OpenAI-chat-completions engine, many endpoints. Every entry was
-// verified against the vendor's official documentation; anything needing more than base+path+Bearer
+// Data-driven provider presets for OpenAI- and Anthropic-compatible endpoints. Every entry was
+// verified against the vendor's official documentation; anything needing more than base+path+API key
 // (Azure deployment URLs, Bedrock SigV4, Vertex OAuth) is deliberately excluded — "Custom" covers them
-// via relays. Adding a vendor = adding one row here; the engine never changes.
+// via relays. A vendor exposes one row per protocol endpoint so the transport choice stays explicit.
 struct ProviderPreset: Identifiable, Hashable, Sendable {
     enum Region: Sendable { case global, cn, local }
     let id: String
     let name: String          // brand names stay unlocalised; CN entries carry bilingual labels
     let baseURL: String       // host base only — BYOKConfig folds base/path
     let apiPath: String
+    let apiFormat: BYOKAPIFormat
+    let supportsModelDiscovery: Bool
     let defaultModel: String
     let region: Region
+
+    init(
+        id: String,
+        name: String,
+        baseURL: String,
+        apiPath: String,
+        apiFormat: BYOKAPIFormat = .openAI,
+        supportsModelDiscovery: Bool = true,
+        defaultModel: String,
+        region: Region
+    ) {
+        self.id = id
+        self.name = name
+        self.baseURL = baseURL
+        self.apiPath = apiPath
+        self.apiFormat = apiFormat
+        self.supportsModelDiscovery = supportsModelDiscovery
+        self.defaultModel = defaultModel
+        self.region = region
+    }
+
     var isLocal: Bool { region == .local }
 }
 
@@ -21,7 +44,8 @@ enum ProviderCatalog {
         .init(id: "openai", name: "OpenAI", baseURL: "https://api.openai.com",
               apiPath: "/v1/chat/completions", defaultModel: "gpt-5.4-mini", region: .global),
         .init(id: "anthropic", name: "Anthropic Claude", baseURL: "https://api.anthropic.com",
-              apiPath: "/v1/chat/completions", defaultModel: "claude-haiku-4-5", region: .global),
+              apiPath: "/v1/messages", apiFormat: .anthropic,
+              defaultModel: "claude-haiku-4-5", region: .global),
         .init(id: "gemini", name: "Google Gemini", baseURL: "https://generativelanguage.googleapis.com",
               apiPath: "/v1beta/openai/chat/completions", defaultModel: "gemini-flash-latest", region: .global),
         .init(id: "xai", name: "xAI Grok", baseURL: "https://api.x.ai",
@@ -55,8 +79,11 @@ enum ProviderCatalog {
         // ---- China mainland ----
         .init(id: "deepseek", name: "DeepSeek", baseURL: "https://api.deepseek.com",
               apiPath: "/chat/completions", defaultModel: "deepseek-chat", region: .cn),
-        .init(id: "dashscope", name: "通义千问 Qwen", baseURL: "https://dashscope.aliyuncs.com",
+        .init(id: "dashscope", name: "阿里云百炼 · OpenAI", baseURL: "https://dashscope.aliyuncs.com",
               apiPath: "/compatible-mode/v1/chat/completions", defaultModel: "qwen-plus", region: .cn),
+        .init(id: "dashscope-anthropic", name: "阿里云百炼 · Anthropic", baseURL: "https://dashscope.aliyuncs.com",
+              apiPath: "/apps/anthropic/v1/messages", apiFormat: .anthropic, supportsModelDiscovery: false,
+              defaultModel: "deepseek-v4-pro", region: .cn),
         .init(id: "volcark", name: "豆包(火山方舟)", baseURL: "https://ark.cn-beijing.volces.com",
               apiPath: "/api/v3/chat/completions", defaultModel: "doubao-seed-1-6-flash-250828", region: .cn),
         .init(id: "zhipu", name: "智谱 GLM", baseURL: "https://open.bigmodel.cn",
@@ -97,9 +124,49 @@ enum ProviderCatalog {
     /// Settings. Host, PORT and path must all match — a relay hosted on a vendor's domain, a custom
     /// localhost port (Ollama vs LM Studio vs vLLM) must stay distinct rather than mis-classified.
     static func match(base: String, path: String) -> ProviderPreset? {
-        let normPath = path.isEmpty ? "/v1/chat/completions" : path
-        guard let key = hostPort(base) else { return nil }
-        return presets.first { hostPort($0.baseURL) == key && $0.apiPath == normPath }
+        let folded = BYOKConfig.fold(base: base, path: path.isEmpty ? "/v1/chat/completions" : path)
+        guard let key = hostPort(folded.base) else { return nil }
+        return presets.first { hostPort($0.baseURL) == key && $0.apiPath == folded.path }
+    }
+
+    /// Resolve model-list capability for both fixed presets and user-entered endpoints. Alibaba Cloud's
+    /// workspace hosts cannot be represented as a static preset because every workspace ID changes the
+    /// hostname, but their Anthropic route still has the same documented Messages-only capability.
+    static func supportsModelDiscovery(base: String, path: String, format: BYOKAPIFormat) -> Bool {
+        if let preset = match(base: base, path: path), preset.apiFormat == format {
+            return preset.supportsModelDiscovery
+        }
+        guard format == .anthropic else { return true }
+
+        let folded = BYOKConfig.fold(base: base, path: path)
+        let rawRoute = BYOKConfig.sanitizedPath(folded.path).path
+        let route = rawRoute.count > 1 && rawRoute.hasSuffix("/") ? String(rawRoute.dropLast()) : rawRoute
+        guard route == "/apps/anthropic/v1/messages",
+              let endpoint = BYOKConfig.url(folded.base), endpoint.scheme?.lowercased() == "https",
+              endpoint.port == nil || endpoint.port == 443,
+              let host = endpoint.host?.lowercased()
+        else { return true }
+
+        let sharedHosts: Set<String> = [
+            "dashscope.aliyuncs.com",
+            "dashscope-intl.aliyuncs.com",
+            "dashscope-us.aliyuncs.com",
+        ]
+        if sharedHosts.contains(host) { return false }
+
+        let workspaceSuffixes = [
+            "cn-beijing.maas.aliyuncs.com",
+            "ap-southeast-1.maas.aliyuncs.com",
+            "ap-northeast-1.maas.aliyuncs.com",
+            "eu-central-1.maas.aliyuncs.com",
+        ]
+        let isWorkspaceHost = workspaceSuffixes.contains { suffix in
+            let marker = ".\(suffix)"
+            guard host.hasSuffix(marker) else { return false }
+            let workspaceID = host.dropLast(marker.count)
+            return !workspaceID.isEmpty && !workspaceID.contains(".")
+        }
+        return !isWorkspaceHost
     }
 
     private static func hostPort(_ base: String) -> String? {

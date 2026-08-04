@@ -2,6 +2,15 @@
   "sourceLanguage": "en",
   "strings": {
     "AI dictionary": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"KI-Wörterbuch"}},"es":{"stringUnit":{"state":"translated","value":"Diccionario de IA"}},"fr":{"stringUnit":{"state":"translated","value":"Dictionnaire IA"}},"ja":{"stringUnit":{"state":"translated","value":"AI辞書"}},"ko":{"stringUnit":{"state":"translated","value":"AI 사전"}},"ru":{"stringUnit":{"state":"translated","value":"ИИ-словарь"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"AI 词典"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"AI 詞典"}}}},
+    "API format": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"API-Format"}},"es":{"stringUnit":{"state":"translated","value":"Formato de API"}},"fr":{"stringUnit":{"state":"translated","value":"Format d’API"}},"ja":{"stringUnit":{"state":"translated","value":"API形式"}},"ko":{"stringUnit":{"state":"translated","value":"API 형식"}},"ru":{"stringUnit":{"state":"translated","value":"Формат API"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"API 格式"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"API 格式"}}}},
+    "API key header": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"API-Key-Header"}},"es":{"stringUnit":{"state":"translated","value":"Encabezado de clave de API"}},"fr":{"stringUnit":{"state":"translated","value":"En-tête de clé API"}},"ja":{"stringUnit":{"state":"translated","value":"APIキーヘッダー"}},"ko":{"stringUnit":{"state":"translated","value":"API 키 헤더"}},"ru":{"stringUnit":{"state":"translated","value":"Заголовок API-ключа"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"API Key 请求头"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"API Key 請求標頭"}}}},
+    "Automatic (protocol default)": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Automatisch (Protokollstandard)"}},"es":{"stringUnit":{"state":"translated","value":"Automático (predeterminado del protocolo)"}},"fr":{"stringUnit":{"state":"translated","value":"Automatique (valeur par défaut du protocole)"}},"ja":{"stringUnit":{"state":"translated","value":"自動（プロトコルのデフォルト）"}},"ko":{"stringUnit":{"state":"translated","value":"자동(프로토콜 기본값)"}},"ru":{"stringUnit":{"state":"translated","value":"Автоматически (по умолчанию для протокола)"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"自动（协议默认）"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"自動（協定預設）"}}}},
+    "No authentication": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Keine Authentifizierung"}},"es":{"stringUnit":{"state":"translated","value":"Sin autenticación"}},"fr":{"stringUnit":{"state":"translated","value":"Aucune authentification"}},"ja":{"stringUnit":{"state":"translated","value":"認証なし"}},"ko":{"stringUnit":{"state":"translated","value":"인증 없음"}},"ru":{"stringUnit":{"state":"translated","value":"Без аутентификации"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"无需认证"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"無需驗證"}}}},
+    "Automatic uses Bearer for OpenAI, x-api-key for Anthropic, and no API key for localhost.": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Automatisch verwendet Bearer für OpenAI, x-api-key für Anthropic und keinen API-Schlüssel für localhost."}},"es":{"stringUnit":{"state":"translated","value":"Automático usa Bearer para OpenAI, x-api-key para Anthropic y ninguna clave de API para localhost."}},"fr":{"stringUnit":{"state":"translated","value":"Le mode automatique utilise Bearer pour OpenAI, x-api-key pour Anthropic et aucune clé API pour localhost."}},"ja":{"stringUnit":{"state":"translated","value":"自動では、OpenAI に Bearer、Anthropic に x-api-key を使用し、localhost では API キーを使用しません。"}},"ko":{"stringUnit":{"state":"translated","value":"자동은 OpenAI에 Bearer, Anthropic에 x-api-key를 사용하고 localhost에는 API 키를 사용하지 않습니다."}},"ru":{"stringUnit":{"state":"translated","value":"Автоматический режим использует Bearer для OpenAI, x-api-key для Anthropic и не использует API-ключ для localhost."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"自动模式对 OpenAI 使用 Bearer，对 Anthropic 使用 x-api-key，并且 localhost 不使用 API Key。"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"自動模式對 OpenAI 使用 Bearer，對 Anthropic 使用 x-api-key，且 localhost 不使用 API Key。"}}}},
+    "Anthropic-compatible": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Anthropic-kompatibel"}},"es":{"stringUnit":{"state":"translated","value":"Compatible con Anthropic"}},"fr":{"stringUnit":{"state":"translated","value":"Compatible Anthropic"}},"ja":{"stringUnit":{"state":"translated","value":"Anthropic互換"}},"ko":{"stringUnit":{"state":"translated","value":"Anthropic 호환"}},"ru":{"stringUnit":{"state":"translated","value":"Совместимый с Anthropic"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"Anthropic 兼容"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"Anthropic 相容"}}}},
+    "OpenAI-compatible": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"OpenAI-kompatibel"}},"es":{"stringUnit":{"state":"translated","value":"Compatible con OpenAI"}},"fr":{"stringUnit":{"state":"translated","value":"Compatible OpenAI"}},"ja":{"stringUnit":{"state":"translated","value":"OpenAI互換"}},"ko":{"stringUnit":{"state":"translated","value":"OpenAI 호환"}},"ru":{"stringUnit":{"state":"translated","value":"Совместимый с OpenAI"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"OpenAI 兼容"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"OpenAI 相容"}}}},
+    "Alibaba Cloud Model Studio's Anthropic endpoint does not provide a model list. Enter the model ID manually.": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Der Anthropic-Endpunkt von Alibaba Cloud Model Studio stellt keine Modellliste bereit. Gib die Modell-ID manuell ein."}},"es":{"stringUnit":{"state":"translated","value":"El endpoint Anthropic de Alibaba Cloud Model Studio no proporciona una lista de modelos. Introduce el ID del modelo manualmente."}},"fr":{"stringUnit":{"state":"translated","value":"Le point de terminaison Anthropic d’Alibaba Cloud Model Studio ne fournit pas de liste de modèles. Saisissez l’identifiant du modèle manuellement."}},"ja":{"stringUnit":{"state":"translated","value":"Alibaba Cloud Model Studio の Anthropic エンドポイントはモデル一覧を提供しません。モデル ID を手動で入力してください。"}},"ko":{"stringUnit":{"state":"translated","value":"Alibaba Cloud Model Studio의 Anthropic 엔드포인트는 모델 목록을 제공하지 않습니다. 모델 ID를 직접 입력하세요."}},"ru":{"stringUnit":{"state":"translated","value":"Эндпоинт Anthropic в Alibaba Cloud Model Studio не предоставляет список моделей. Введите идентификатор модели вручную."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"阿里云百炼 Anthropic 端点不提供模型列表，请手动输入模型 ID。"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"阿里雲百煉 Anthropic 端點不提供模型列表，請手動輸入模型 ID。"}}}},
+    "e.g. claude-haiku-4-5": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"z. B. claude-haiku-4-5"}},"es":{"stringUnit":{"state":"translated","value":"p. ej. claude-haiku-4-5"}},"fr":{"stringUnit":{"state":"translated","value":"ex. claude-haiku-4-5"}},"ja":{"stringUnit":{"state":"translated","value":"例: claude-haiku-4-5"}},"ko":{"stringUnit":{"state":"translated","value":"예: claude-haiku-4-5"}},"ru":{"stringUnit":{"state":"translated","value":"напр. claude-haiku-4-5"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"例如 claude-haiku-4-5"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"例如 claude-haiku-4-5"}}}},
     "Check compatibility": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Kompatibilität prüfen"}},"es":{"stringUnit":{"state":"translated","value":"Comprobar compatibilidad"}},"fr":{"stringUnit":{"state":"translated","value":"Vérifier la compatibilité"}},"ja":{"stringUnit":{"state":"translated","value":"互換性を確認"}},"ko":{"stringUnit":{"state":"translated","value":"호환성 확인"}},"ru":{"stringUnit":{"state":"translated","value":"Проверить совместимость"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"检查兼容性"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"檢查相容性"}}}},
     "Couldn't assess": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Prüfung nicht möglich"}},"es":{"stringUnit":{"state":"translated","value":"No se pudo evaluar"}},"fr":{"stringUnit":{"state":"translated","value":"Évaluation impossible"}},"ja":{"stringUnit":{"state":"translated","value":"評価できませんでした"}},"ko":{"stringUnit":{"state":"translated","value":"평가할 수 없음"}},"ru":{"stringUnit":{"state":"translated","value":"Не удалось выполнить проверку"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"无法完成检查"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"無法完成檢查"}}}},
     "Couldn't complete the compatibility check: %@": {"localizations":{"de":{"stringUnit":{"state":"translated","value":"Die Kompatibilitätsprüfung konnte nicht abgeschlossen werden: %@"}},"es":{"stringUnit":{"state":"translated","value":"No se pudo completar la comprobación de compatibilidad: %@"}},"fr":{"stringUnit":{"state":"translated","value":"Impossible de terminer la vérification de compatibilité : %@"}},"ja":{"stringUnit":{"state":"translated","value":"互換性の確認を完了できませんでした: %@"}},"ko":{"stringUnit":{"state":"translated","value":"호환성 확인을 완료하지 못했습니다: %@"}},"ru":{"stringUnit":{"state":"translated","value":"Не удалось завершить проверку совместимости: %@"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"无法完成兼容性检查：%@"}},"zh-Hant":{"stringUnit":{"state":"translated","value":"無法完成相容性檢查：%@"}}}},
@@ -1422,6 +1431,58 @@
           "stringUnit": {
             "state": "translated",
             "value": "擷取"
+          }
+        }
+      }
+    },
+    "Changes apply immediately. Translation sends your selected text to this service; the popup footer shows where it went.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Änderungen gelten sofort. Beim Übersetzen wird dein ausgewählter Text an diesen Dienst gesendet; die Fußzeile des Popups zeigt, wohin er ging."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los cambios se aplican al instante. Al traducir, el texto seleccionado se envía a este servicio; el pie de la ventana emergente muestra adónde se envió."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les modifications s'appliquent immédiatement. La traduction envoie votre texte sélectionné à ce service ; le pied de la fenêtre indique où il est parti."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "変更はすぐに適用されます。翻訳では選択したテキストがこのサービスに送信され、送信先はポップアップのフッターに表示されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "변경 사항은 즉시 적용됩니다. 번역 시 선택한 텍스트가 이 서비스로 전송되며, 팝업 하단에 전송된 위치가 표시됩니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изменения применяются сразу. При переводе выделенный текст отправляется этому сервису; в нижней строке всплывающего окна видно, куда он ушёл."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "改动立即生效。翻译会把选中文本发送给该服务；浮窗底部会显示发送去向。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更改會立即生效。翻譯時會將你選取的文字傳送至此服務；彈出視窗底部會顯示文字的去向。"
           }
         }
       }

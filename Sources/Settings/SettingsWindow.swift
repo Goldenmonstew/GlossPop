@@ -7,6 +7,9 @@ enum SettingsAssessmentDemo: String, CaseIterable {
     case translationOnly = "--demo-settings-assessment-translation-only"
     case incompatible = "--demo-settings-assessment-incompatible"
     case inconclusive = "--demo-settings-assessment-inconclusive"
+    case anthropic = "--demo-settings-anthropic"
+    case anthropicRelay = "--demo-settings-anthropic-relay"
+    case anthropicWorkspace = "--demo-settings-anthropic-workspace"
 
     init?(arguments: [String]) {
         guard let match = Self.allCases.first(where: { arguments.contains($0.rawValue) }) else {
@@ -24,7 +27,7 @@ enum SettingsAssessmentDemo: String, CaseIterable {
         switch self {
         case .running:
             return nil
-        case .compatible:
+        case .compatible, .anthropic, .anthropicRelay, .anthropicWorkspace:
             return ModelCapabilityReport(
                 translation: passed,
                 dictionary: ModelCapabilityCheck(latency: .milliseconds(2_400), outcome: .passed),
@@ -49,7 +52,10 @@ enum SettingsAssessmentDemo: String, CaseIterable {
                 translation: ModelCapabilityCheck(
                     latency: .milliseconds(900),
                     outcome: .failed(
-                        .request(message: "HTTP 400 from api.example.com", inconclusive: false)
+                        .request(
+                            message: "HTTP 400 from api.example.com — invalid model ID",
+                            inconclusive: false
+                        )
                     )
                 ),
                 dictionary: .skipped,
@@ -61,7 +67,10 @@ enum SettingsAssessmentDemo: String, CaseIterable {
                 translation: ModelCapabilityCheck(
                     latency: .milliseconds(1_700),
                     outcome: .failed(
-                        .request(message: "HTTP 429 from api.example.com", inconclusive: true)
+                        .request(
+                            message: "HTTP 429 from api.example.com — rate limit exceeded",
+                            inconclusive: true
+                        )
                     )
                 ),
                 dictionary: .skipped,
@@ -80,6 +89,8 @@ private struct SettingsSeed {
     let model: String
     let apiKey: String
     let apiPath: String
+    let apiFormat: BYOKAPIFormat
+    let apiKeyHeader: BYOKAPIKeyHeader
     let reasoningEffort: String
     let dictMode: DictionaryMode
     let sentenceEnabled: Bool
@@ -95,18 +106,24 @@ private struct SettingsSeed {
     let hotKeyDisplay: String
     let assessmentReport: ModelCapabilityReport?
     let assessmentProgress: ModelCapabilityStage?
+    let scrollsToAssessment: Bool
 
     static func live() -> SettingsSeed {
-        SettingsSeed(
+        let preset = ProviderCatalog.match(
+            base: BYOKConfig.baseURL,
+            path: BYOKConfig.apiPath
+        ).flatMap {
+            $0.apiFormat == BYOKConfig.apiFormat && BYOKConfig.apiKeyHeader == .automatic ? $0 : nil
+        }
+        return SettingsSeed(
             isDemo: false,
-            provider: ProviderCatalog.match(
-                base: BYOKConfig.baseURL,
-                path: BYOKConfig.apiPath
-            )?.id ?? "custom",
+            provider: preset?.id ?? "custom",
             baseURL: BYOKConfig.baseURL,
             model: BYOKConfig.model,
             apiKey: BYOKConfig.apiKey,
             apiPath: BYOKConfig.apiPath,
+            apiFormat: BYOKConfig.apiFormat,
+            apiKeyHeader: BYOKConfig.apiKeyHeader,
             reasoningEffort: BYOKConfig.reasoningEffort,
             dictMode: DictionaryConfig.mode,
             sentenceEnabled: BYOKConfig.sentenceAnalysisEnabled,
@@ -121,18 +138,33 @@ private struct SettingsSeed {
             compactPanel: PanelConfig.compact,
             hotKeyDisplay: HotKeyConfig.displayString,
             assessmentReport: nil,
-            assessmentProgress: nil
+            assessmentProgress: nil,
+            scrollsToAssessment: false
         )
     }
 
     static func demo(_ demo: SettingsAssessmentDemo) -> SettingsSeed {
-        SettingsSeed(
+        let isAnthropicRelay = demo == .anthropicRelay
+        let isAnthropicWorkspace = demo == .anthropicWorkspace
+        let isCustomAnthropic = isAnthropicRelay || isAnthropicWorkspace
+        let isAnthropic = demo == .anthropic || isCustomAnthropic
+        return SettingsSeed(
             isDemo: true,
-            provider: "custom",
-            baseURL: "https://api.example.com",
-            model: "example-translation-model",
+            provider: isCustomAnthropic ? "custom" : isAnthropic ? "dashscope-anthropic" : "custom",
+            baseURL: isAnthropicWorkspace
+                ? "https://workspace-id.cn-beijing.maas.aliyuncs.com"
+                : isAnthropicRelay
+                    ? "https://relay.example.com"
+                    : isAnthropic ? "https://dashscope.aliyuncs.com" : "https://api.example.com",
+            model: isAnthropic ? "deepseek-v4-pro" : "example-translation-model",
             apiKey: "demo-key-not-secret",
-            apiPath: "/v1/chat/completions",
+            apiPath: isAnthropicWorkspace
+                ? "/apps/anthropic/v1/messages"
+                : isAnthropicRelay
+                    ? "/v1/messages"
+                    : isAnthropic ? "/apps/anthropic/v1/messages" : "/v1/chat/completions",
+            apiFormat: isAnthropic ? .anthropic : .openAI,
+            apiKeyHeader: isAnthropicRelay ? .authorizationBearer : .automatic,
             reasoningEffort: "low",
             dictMode: .offlinePlusAI,
             sentenceEnabled: true,
@@ -147,7 +179,8 @@ private struct SettingsSeed {
             compactPanel: true,
             hotKeyDisplay: "⌃⌘T",
             assessmentReport: demo.report,
-            assessmentProgress: demo.progress
+            assessmentProgress: demo.progress,
+            scrollsToAssessment: !isCustomAnthropic
         )
     }
 }
@@ -218,6 +251,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
 private struct SettingsView: View {
     private let isDemo: Bool
+    private let scrollsToAssessment: Bool
     @State private var provider: String
     @State private var baseURL: String
     @State private var model: String
@@ -230,6 +264,8 @@ private struct SettingsView: View {
     @State private var availableDicts: [String]   // macOS dictionaries available to enable in Dictionary.app
     @State private var inflight: Task<Void, Never>?
     @State private var apiPath: String
+    @State private var apiFormat: BYOKAPIFormat
+    @State private var apiKeyHeader: BYOKAPIKeyHeader
     @State private var reasoningEffort: String
     @State private var dictMode: DictionaryMode
     @State private var sentenceEnabled: Bool
@@ -255,6 +291,7 @@ private struct SettingsView: View {
 
     init(seed: SettingsSeed) {
         isDemo = seed.isDemo
+        scrollsToAssessment = seed.scrollsToAssessment
         _provider = State(initialValue: seed.provider)
         _baseURL = State(initialValue: seed.baseURL)
         _model = State(initialValue: seed.model)
@@ -267,6 +304,8 @@ private struct SettingsView: View {
         _availableDicts = State(initialValue: [])
         _inflight = State(initialValue: nil)
         _apiPath = State(initialValue: seed.apiPath)
+        _apiFormat = State(initialValue: seed.apiFormat)
+        _apiKeyHeader = State(initialValue: seed.apiKeyHeader)
         _reasoningEffort = State(initialValue: seed.reasoningEffort)
         _dictMode = State(initialValue: seed.dictMode)
         _sentenceEnabled = State(initialValue: seed.sentenceEnabled)
@@ -291,22 +330,32 @@ private struct SettingsView: View {
 
     private var selectedPreset: ProviderPreset? { ProviderCatalog.preset(id: provider) }
     private var isLocalProvider: Bool { selectedPreset?.isLocal ?? BYOKConfig.isLocal(baseURL) }
+    private var supportsModelDiscovery: Bool {
+        ProviderCatalog.supportsModelDiscovery(base: trimmedBase, path: trimmedPath, format: apiFormat)
+    }
     private var trimmedBase: String { baseURL.trimmingCharacters(in: .whitespacesAndNewlines) }
     private var trimmedKey: String { apiKey.trimmingCharacters(in: .whitespacesAndNewlines) }
     private var trimmedModel: String { model.trimmingCharacters(in: .whitespacesAndNewlines) }
     private var trimmedPath: String {
         let p = apiPath.trimmingCharacters(in: .whitespacesAndNewlines)
-        return p.isEmpty ? "/v1/chat/completions" : p
+        return p.isEmpty ? defaultAPIPath : p
+    }
+    private var defaultAPIPath: String {
+        apiFormat == .anthropic ? "/v1/messages" : "/v1/chat/completions"
     }
     private var version: String { (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "" }
     private var isBusy: Bool { fetchingModels || assessing }
 
-    private var endpointKey: String { "\(baseURL)\u{1}\(apiPath)\u{1}\(apiKey)" }
+    private var endpointKey: String {
+        "\(baseURL)\u{1}\(apiPath)\u{1}\(apiKey)\u{1}\(apiFormat.rawValue)\u{1}\(apiKeyHeader.rawValue)"
+    }
     private var assessmentKey: String {
         [
             baseURL,
             apiPath,
             apiKey,
+            apiFormat.rawValue,
+            apiKeyHeader.rawValue,
             model,
             reasoningEffort,
             firstLang,
@@ -330,6 +379,7 @@ private struct SettingsView: View {
             .allowsHitTesting(!isDemo)
             .onAppear {
                 if isDemo {
+                    guard scrollsToAssessment else { return }
                     DispatchQueue.main.async {
                         proxy.scrollTo(
                             "model-assessment",
@@ -355,7 +405,18 @@ private struct SettingsView: View {
                 if let preset = selectedPreset {   // a known provider: reset endpoint + model to its defaults
                     baseURL = preset.baseURL
                     apiPath = preset.apiPath
+                    apiFormat = preset.apiFormat
+                    apiKeyHeader = .automatic
                     if !preset.defaultModel.isEmpty { model = preset.defaultModel }
+                }
+                commitText()
+            }
+            .onChange(of: apiFormat) { oldFormat, newFormat in
+                guard !isDemo else { return }
+                status = nil
+                models = []
+                if provider == "custom", apiPath == defaultPath(for: oldFormat) {
+                    apiPath = defaultPath(for: newFormat)
                 }
                 commitText()
             }
@@ -378,6 +439,9 @@ private struct SettingsView: View {
             .onChange(of: focusedField) { if !isDemo { commitText() } }
             .onChange(of: reasoningEffort) {
                 if !isDemo { BYOKConfig.reasoningEffort = reasoningEffort }
+            }
+            .onChange(of: apiKeyHeader) {
+                if !isDemo { commitText() }
             }
             .onChange(of: dictMode) { if !isDemo { DictionaryConfig.mode = dictMode } }
             .onChange(of: sentenceEnabled) {
@@ -477,31 +541,70 @@ private struct SettingsView: View {
             }
             if provider == "custom" {
                 TextField("Endpoint", text: $baseURL, prompt: Text("https://your-relay-host")).focused($focusedField, equals: .base).onSubmit { commitText() }
-                TextField("API path", text: $apiPath, prompt: Text("/v1/chat/completions")).focused($focusedField, equals: .path).onSubmit { commitText() }
+                Picker("API format", selection: $apiFormat) {
+                    Text("OpenAI-compatible").tag(BYOKAPIFormat.openAI)
+                    Text("Anthropic-compatible").tag(BYOKAPIFormat.anthropic)
+                }
+                Picker("API key header", selection: $apiKeyHeader) {
+                    Text("Automatic (protocol default)").tag(BYOKAPIKeyHeader.automatic)
+                    Text(verbatim: "Authorization: Bearer").tag(BYOKAPIKeyHeader.authorizationBearer)
+                    Text(verbatim: "x-api-key").tag(BYOKAPIKeyHeader.xAPIKey)
+                    Text("No authentication").tag(BYOKAPIKeyHeader.none)
+                }
+                Text("Automatic uses Bearer for OpenAI, x-api-key for Anthropic, and no API key for localhost.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                TextField("API path", text: $apiPath, prompt: Text(defaultAPIPath)).focused($focusedField, equals: .path).onSubmit { commitText() }
+            } else if apiFormat == .anthropic {
+                LabeledContent("API format") {
+                    Text("Anthropic-compatible").foregroundStyle(.secondary)
+                }
             }
-            if !isLocalProvider {
+            if provider == "custom" || !isLocalProvider {
                 SecureField("API key", text: $apiKey, prompt: Text("Stored only in your local Keychain")).focused($focusedField, equals: .key).onSubmit { commitText() }
             }
             LabeledContent("Model") {
                 HStack(spacing: 6) {
-                    TextField("", text: $model, prompt: Text("e.g. gpt-4o-mini")).multilineTextAlignment(.trailing).focused($focusedField, equals: .model).onSubmit { commitText() }
-                    Menu {
-                        Button(fetchingModels ? String(localized: "Fetching…") : String(localized: "Fetch model list")) { fetchModels() }
-                            .disabled(trimmedBase.isEmpty || isBusy)
-                        if !models.isEmpty {
-                            Divider()
-                            ForEach(models, id: \.self) { m in Button(m) { model = m } }
-                        }
-                    } label: { Image(systemName: "chevron.down.circle.fill").imageScale(.large) }
-                    .menuStyle(.button).buttonStyle(.borderless).menuIndicator(.hidden).fixedSize()
+                    TextField(
+                        "",
+                        text: $model,
+                        prompt: Text(
+                            apiFormat == .anthropic
+                                ? String(localized: "e.g. claude-haiku-4-5")
+                                : String(localized: "e.g. gpt-4o-mini")
+                        )
+                    )
+                        .multilineTextAlignment(.trailing)
+                        .focused($focusedField, equals: .model)
+                        .onSubmit { commitText() }
+                    if supportsModelDiscovery {
+                        Menu {
+                            Button(fetchingModels ? String(localized: "Fetching…") : String(localized: "Fetch model list")) { fetchModels() }
+                                .disabled(trimmedBase.isEmpty || isBusy)
+                            if !models.isEmpty {
+                                Divider()
+                                ForEach(models, id: \.self) { m in Button(m) { model = m } }
+                            }
+                        } label: { Image(systemName: "chevron.down.circle.fill").imageScale(.large) }
+                        .menuStyle(.button).buttonStyle(.borderless).menuIndicator(.hidden).fixedSize()
+                    }
                 }
             }
-            Picker("Reasoning effort", selection: $reasoningEffort) {
-                Text("Default").tag("default")
-                Text("Minimal").tag("minimal")
-                Text("Low (faster)").tag("low")
-                Text("Medium").tag("medium")
-                Text("High (more accurate)").tag("high")
+            if !supportsModelDiscovery {
+                Text("Alibaba Cloud Model Studio's Anthropic endpoint does not provide a model list. Enter the model ID manually.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if apiFormat == .openAI {
+                Picker("Reasoning effort", selection: $reasoningEffort) {
+                    Text("Default").tag("default")
+                    Text("Minimal").tag("minimal")
+                    Text("Low (faster)").tag("low")
+                    Text("Medium").tag("medium")
+                    Text("High (more accurate)").tag("high")
+                }
             }
             ModelAssessmentControl(
                 assessing: assessing,
@@ -528,8 +631,13 @@ private struct SettingsView: View {
             Text("The check uses built-in sample text and built-in prompts; custom prompts are not sent or evaluated. It tests streamed translation, the AI dictionary and sentence analysis, and never reads your selection, clipboard, history or vocabulary.")
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Text(isLocalProvider ? String(localized: "Local model — your text never leaves this Mac.")
-                                  : String(localized: "Changes apply immediately. Translation sends your selected text to this service; the popup footer shows where it went. Reasoning effort only affects models that support it (e.g. gpt-5.x) — lower is faster."))
+            Text(
+                isLocalProvider
+                    ? String(localized: "Local model — your text never leaves this Mac.")
+                    : apiFormat == .anthropic
+                        ? String(localized: "Changes apply immediately. Translation sends your selected text to this service; the popup footer shows where it went.")
+                        : String(localized: "Changes apply immediately. Translation sends your selected text to this service; the popup footer shows where it went. Reasoning effort only affects models that support it (e.g. gpt-5.x) — lower is faster.")
+            )
                 .font(.caption).foregroundStyle(.secondary)
         }
     }
@@ -658,6 +766,8 @@ private struct SettingsView: View {
         }
         BYOKConfig.baseURL = folded.base
         BYOKConfig.apiPath = folded.path
+        BYOKConfig.apiFormat = apiFormat
+        BYOKConfig.apiKeyHeader = apiKeyHeader
         BYOKConfig.model = trimmedModel
         BYOKConfig.customSystemPrompt = customSystemPrompt
         BYOKConfig.customUserPrompt = customUserPrompt
@@ -683,23 +793,47 @@ private struct SettingsView: View {
     }
 
     private func fetchModels() {
-        guard !isDemo, !isBusy else { return }
-        let base = trimmedBase, key = trimmedKey, path = trimmedPath
+        guard !isDemo, !isBusy, supportsModelDiscovery else { return }
+        let base = trimmedBase
+        let key = trimmedKey
+        let path = trimmedPath
+        let format = apiFormat
+        let keyHeader = apiKeyHeader
         let folded = BYOKConfig.fold(base: base, path: path)   // hit the SAME endpoint save() will persist
         fetchingModels = true; status = nil
         inflight = Task {
             defer { fetchingModels = false }
             do {
-                let result = try await BYOKClient.models(baseURL: folded.base, apiPath: folded.path, apiKey: key)
-                guard base == trimmedBase, key == trimmedKey, path == trimmedPath else { return } // config changed mid-flight
+                let result = try await BYOKClient.models(
+                    baseURL: folded.base,
+                    apiPath: folded.path,
+                    apiFormat: format,
+                    apiKeyHeader: keyHeader,
+                    apiKey: key
+                )
+                guard base == trimmedBase,
+                      key == trimmedKey,
+                      path == trimmedPath,
+                      format == apiFormat,
+                      keyHeader == apiKeyHeader
+                else { return } // config changed mid-flight
                 models = result
                 status = String(localized: "Fetched \(result.count) models"); statusOK = true
                 if trimmedModel.isEmpty, let first = result.first { model = first }
             } catch {
-                guard base == trimmedBase, key == trimmedKey else { return }
+                guard base == trimmedBase,
+                      key == trimmedKey,
+                      path == trimmedPath,
+                      format == apiFormat,
+                      keyHeader == apiKeyHeader
+                else { return }
                 models = []; status = String(localized: "Couldn't fetch models: \(error.localizedDescription)"); statusOK = false
             }
         }
+    }
+
+    private func defaultPath(for format: BYOKAPIFormat) -> String {
+        format == .anthropic ? "/v1/messages" : "/v1/chat/completions"
     }
 
     private func checkCompatibility() {

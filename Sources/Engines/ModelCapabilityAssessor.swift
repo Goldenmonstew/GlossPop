@@ -192,7 +192,7 @@ struct ModelCapabilityAssessor: Sendable {
         }
     ) {
         self.init(
-            engine: OpenAICompatibleEngine(snapshot: snapshot.forCapabilityAssessment),
+            engine: BYOKEngineFactory.make(snapshot: snapshot.forCapabilityAssessment),
             redacting: [snapshot.apiKey],
             languageJudge: languageJudge
         )
@@ -396,7 +396,7 @@ struct ModelCapabilityAssessor: Sendable {
             switch refine {
             case .invalidEndpoint:
                 return .request(message: message, inconclusive: false)
-            case .http(let statusCode, _):
+            case .http(let statusCode, _, _):
                 let inconclusive = statusCode == 401 || statusCode == 403
                     || statusCode == 408 || statusCode == 429 || statusCode >= 500
                 return .request(message: message, inconclusive: inconclusive)
@@ -414,15 +414,8 @@ struct ModelCapabilityAssessor: Sendable {
     }
 
     private func diagnostic(_ error: Error) -> String {
-        var value = error.localizedDescription
-        for sensitive in redactions {
-            value = value.replacingOccurrences(of: sensitive, with: "••••")
-        }
-        value = value.unicodeScalars.map {
-            CharacterSet.controlCharacters.contains($0) ? " " : String($0)
-        }.joined()
-        value = value.split(whereSeparator: \.isWhitespace).joined(separator: " ")
-        return String(value.prefix(180))
+        UpstreamErrorDetail.sanitized(error.localizedDescription, redacting: redactions)
+            ?? "Upstream error"
     }
 
     private func rethrowCancellation(_ error: Error) throws {

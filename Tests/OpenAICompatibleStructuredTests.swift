@@ -5,7 +5,10 @@ import XCTest
 final class OpenAICompatibleStructuredTests: XCTestCase {
     func testClientErrorDoesNotRetry() async throws {
         let harness = makeHarness([
-            .response(statusCode: 400, body: completionData(content: #"{"error":"bad request"}"#)),
+            .response(
+                statusCode: 400,
+                body: upstreamErrorData("invalid model; x-api-key=test-key")
+            ),
         ])
         defer { harness.close() }
 
@@ -13,16 +16,99 @@ final class OpenAICompatibleStructuredTests: XCTestCase {
             _ = try await dictionaryResult(from: harness.engine)
             XCTFail("Expected the 400 response to fail")
         } catch let error as RefineError {
-            guard case .http(let statusCode, let host) = error else {
+            guard case .http(let statusCode, let host, let detail) = error else {
                 return XCTFail("Expected an HTTP error, got \(error)")
             }
             XCTAssertEqual(statusCode, 400)
             XCTAssertEqual(host, harness.host)
+            XCTAssertEqual(detail, "invalid model; credential: ••••")
         } catch {
             XCTFail("Expected RefineError.http, got \(error)")
         }
 
         XCTAssertEqual(harness.sequence.requestCount, 1)
+    }
+
+    func testStreamingClientErrorIncludesSanitizedDetail() async throws {
+        let harness = makeHarness([
+            .response(
+                statusCode: 401,
+                body: upstreamErrorData("invalid API key: test-key")
+            ),
+        ])
+        defer { harness.close() }
+
+        do {
+            for try await _ in harness.engine.refine(
+                source: "hello",
+                draft: "",
+                targetCode: "zh-Hans"
+            ) {}
+            XCTFail("Expected the 401 response to fail")
+        } catch let error as RefineError {
+            guard case .http(let statusCode, let host, let detail) = error else {
+                return XCTFail("Expected an HTTP error, got \(error)")
+            }
+            XCTAssertEqual(statusCode, 401)
+            XCTAssertEqual(host, harness.host)
+            XCTAssertEqual(detail, "invalid credential: ••••")
+            XCTAssertFalse(error.localizedDescription.contains("test-key"))
+        } catch {
+            XCTFail("Expected RefineError.http, got \(error)")
+        }
+    }
+
+    func testOversizedStreamingErrorFallsBackToStatusOnly() async throws {
+        let harness = makeHarness([
+            .response(
+                statusCode: 502,
+                body: Data(repeating: 0x61, count: UpstreamErrorDetail.maximumBodyBytes + 1)
+            ),
+        ])
+        defer { harness.close() }
+
+        do {
+            for try await _ in harness.engine.refine(
+                source: "hello",
+                draft: "",
+                targetCode: "zh-Hans"
+            ) {}
+            XCTFail("Expected the 502 response to fail")
+        } catch let error as RefineError {
+            guard case .http(let statusCode, let host, let detail) = error else {
+                return XCTFail("Expected an HTTP error, got \(error)")
+            }
+            XCTAssertEqual(statusCode, 502)
+            XCTAssertEqual(host, harness.host)
+            XCTAssertNil(detail)
+        } catch {
+            XCTFail("Expected RefineError.http, got \(error)")
+        }
+    }
+
+    func testStreamingErrorFrameIsSanitized() async throws {
+        let body = Data(
+            (#"data: {"error":{"message":"relay rejected Bearer test-key"}}"# + "\n\n").utf8
+        )
+        let harness = makeHarness([.response(statusCode: 200, body: body)])
+        defer { harness.close() }
+
+        do {
+            for try await _ in harness.engine.refine(
+                source: "hello",
+                draft: "",
+                targetCode: "zh-Hans"
+            ) {}
+            XCTFail("Expected the stream error frame to fail")
+        } catch let error as RefineError {
+            guard case .message(let message) = error else {
+                return XCTFail("Expected a message error, got \(error)")
+            }
+            XCTAssertFalse(message.contains("test-key"))
+            XCTAssertTrue(message.contains("••••"))
+        } catch {
+            XCTFail("Expected RefineError.message, got \(error)")
+        }
     }
 
     func testServerErrorRetriesOnceThenSucceeds() async throws {
@@ -35,6 +121,30 @@ final class OpenAICompatibleStructuredTests: XCTestCase {
         let result = try await dictionaryResult(from: harness.engine)
 
         assertValidDictionary(result)
+        XCTAssertEqual(harness.sequence.requestCount, 2)
+    }
+
+    func testServerErrorRetriesOnceAndKeepsLatestDetail() async throws {
+        let harness = makeHarness([
+            .response(statusCode: 500, body: upstreamErrorData("first failure")),
+            .response(statusCode: 502, body: upstreamErrorData("second failure")),
+        ])
+        defer { harness.close() }
+
+        do {
+            _ = try await dictionaryResult(from: harness.engine)
+            XCTFail("Expected both server responses to fail")
+        } catch let error as RefineError {
+            guard case .http(let statusCode, let host, let detail) = error else {
+                return XCTFail("Expected an HTTP error, got \(error)")
+            }
+            XCTAssertEqual(statusCode, 502)
+            XCTAssertEqual(host, harness.host)
+            XCTAssertEqual(detail, "second failure")
+        } catch {
+            XCTFail("Expected RefineError.http, got \(error)")
+        }
+
         XCTAssertEqual(harness.sequence.requestCount, 2)
     }
 
@@ -244,6 +354,12 @@ private func completionData(content: String) -> Data {
         "choices": [
             ["message": ["content": content]],
         ],
+    ])
+}
+
+private func upstreamErrorData(_ message: String) -> Data {
+    try! JSONSerialization.data(withJSONObject: [
+        "error": ["message": message],
     ])
 }
 

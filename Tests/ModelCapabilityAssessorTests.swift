@@ -191,10 +191,22 @@ final class ModelCapabilityAssessorTests: XCTestCase {
     }
 
     func testDeterministicBadRequestIsIncompatibleButAuthenticationIsInconclusive() async throws {
-        for (statusCode, expected) in [(400, ModelCapabilityLevel.incompatible), (401, .inconclusive)] {
+        let cases: [(Int, ModelCapabilityLevel)] = [
+            (400, .incompatible),
+            (401, .inconclusive),
+            (403, .inconclusive),
+            (404, .incompatible),
+        ]
+        for (statusCode, expected) in cases {
             let engine = StubStructuredEngine(
                 refine: { _, _, _ in
-                    failingStream(RefineError.http(statusCode: statusCode, host: "api.example.com"))
+                    failingStream(
+                        RefineError.http(
+                            statusCode: statusCode,
+                            host: "api.example.com",
+                            detail: "route-specific detail"
+                        )
+                    )
                 },
                 structured: { _, _, _, _ in .sentence(validSentence()) }
             )
@@ -203,6 +215,11 @@ final class ModelCapabilityAssessorTests: XCTestCase {
             let report = try await assessor.assess(firstLanguage: "zh-Hans", secondLanguage: "en")
 
             XCTAssertEqual(report.level, expected)
+            guard case .failed(.request(let message, let inconclusive)) = report.translation.outcome else {
+                return XCTFail("Expected a request issue for HTTP \(statusCode)")
+            }
+            XCTAssertTrue(message.contains("route-specific detail"))
+            XCTAssertEqual(inconclusive, expected == .inconclusive)
         }
     }
 
@@ -353,10 +370,12 @@ final class ModelCapabilityAssessorTests: XCTestCase {
         )
     }
 
-    func testAssessmentSnapshotNeverCarriesCustomPrompts() {
+    func testAssessmentSnapshotPreservesProtocolAndAuthenticationButDropsCustomPrompts() throws {
         let snapshot = BYOKSnapshot(
             baseURL: "https://api.example.com",
-            apiPath: "/v1/chat/completions",
+            apiPath: "/v1/messages",
+            apiFormat: .anthropic,
+            apiKeyHeader: .authorizationBearer,
             model: "example-model",
             apiKey: "secret",
             reasoningEffort: "low",
@@ -367,11 +386,19 @@ final class ModelCapabilityAssessorTests: XCTestCase {
         let assessment = snapshot.forCapabilityAssessment
 
         XCTAssertEqual(assessment.baseURL, snapshot.baseURL)
+        XCTAssertEqual(assessment.apiPath, snapshot.apiPath)
+        XCTAssertEqual(assessment.apiFormat, .anthropic)
+        XCTAssertEqual(assessment.apiKeyHeader, .authorizationBearer)
         XCTAssertEqual(assessment.model, snapshot.model)
         XCTAssertEqual(assessment.apiKey, snapshot.apiKey)
         XCTAssertEqual(assessment.reasoningEffort, snapshot.reasoningEffort)
         XCTAssertTrue(assessment.customSystem.isEmpty)
         XCTAssertTrue(assessment.customUser.isEmpty)
+
+        let engine = try XCTUnwrap(
+            BYOKEngineFactory.make(snapshot: assessment) as? AnthropicCompatibleEngine
+        )
+        XCTAssertEqual(engine.snapshot.apiKeyHeader, .authorizationBearer)
     }
 
     func testUnsupportedFirstLanguageIsInconclusiveWithoutAFakeSentenceRequest() async throws {
